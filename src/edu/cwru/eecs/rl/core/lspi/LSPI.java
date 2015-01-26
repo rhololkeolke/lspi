@@ -12,7 +12,7 @@ public class LSPI implements Serializable {
 	
 	private static final long serialVersionUID = 5103792662788904957L;
 	
-	public enum PolicyImprover { LSTDQ, LSTDQ_EXACT, LSTDQ_EXACT_WITH_WEIGHTING}
+	public enum PolicyImprover { LSTDQ, LSTDQ_EXACT, LSTDQ_EXACT_WITH_WEIGHTING, LSTDQ_OPT_EXACT}
 
 	public static Policy learn(List<Sample> samples, Policy initial_policy, double gamma, double epsilon, int maxIterations)
 	{
@@ -31,6 +31,8 @@ public class LSPI implements Serializable {
 				new_policy.weights = LSTDQ(samples, old_policy, gamma);
             else if(policyImprover == PolicyImprover.LSTDQ_EXACT_WITH_WEIGHTING)
                 new_policy.weights = LSTDQExactWithWeighting(samples, old_policy, gamma);
+            else if(policyImprover == PolicyImprover.LSTDQ_OPT_EXACT)
+                new_policy.weights = LSTDQOptExact(samples, old_policy, gamma);
 			else
 				new_policy.weights = LSTDQExact(samples, old_policy, gamma);
 			iteration++;
@@ -204,6 +206,67 @@ public class LSPI implements Serializable {
         }
 
         return A.solve(b);
+    }
+
+    public static Matrix LSTDQOptExact(List<Sample> samples, Policy policy, double gamma)
+    {
+        ExactBasis basis = null;
+        if(policy.basis instanceof ExactBasis)
+            basis = (ExactBasis)policy.basis;
+        else
+        {
+            System.err.println("LSTDQOptExact requires a policy with a basis function of class ExactBasis.class. Running normal LSTDQ instead.");
+            return LSTDQ(samples, policy, gamma);
+        }
+
+        int k = policy.basis.size();
+        Matrix B = Matrix.identity(k,k).times(1./.01);
+        Matrix b = new Matrix(k, 1);
+
+        for(Sample sample : samples)
+        {
+            int bestAction = 0;
+            try {
+                bestAction = policy.evaluate(sample.nextState);
+            } catch(Exception e) {
+                System.err.println("Failed to evaluate policy");
+                e.printStackTrace();
+            }
+
+            int i = basis.getStateActionIndex(sample.currState, sample.action);
+            int j = basis.getStateActionIndex(sample.nextState, bestAction);
+
+            Matrix H = new Matrix(k,k);
+            if(i == j)
+            {
+                double gammaP = 1 - gamma; // gamma' =  1 - gamma
+                double denom = 1 + gammaP*B.get(i,i);
+
+                for(int x=0; x<k; x++)
+                {
+                    for(int y=0; y<k; y++)
+                    {
+                        H.set(x,y, B.get(x,y) - (gammaP*B.get(x,i)*B.get(i,y))/denom);
+                    }
+                }
+            }
+            else
+            {
+                double denom = 1 + B.get(i,i) - gamma*B.get(j, i);
+
+                for(int x=0; x<k; x++)
+                {
+                    for(int y=0; y<k; y++)
+                    {
+                        H.set(x,y, B.get(x,y) - (-gamma*B.get(x,i)*B.get(j,y) + B.get(x,i)*B.get(i,y))/denom);
+                    }
+                }
+            }
+            b.set(i, 0, b.get(i, 0) + sample.reward);
+            B = H;
+        }
+
+        return B.times(b);
     }
 
     private static String stateToString(Matrix state)
