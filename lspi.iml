@@ -9,7 +9,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="commons-cli-1.2" level="project" />
-    <orderEntry type="library" name="junit:junit:4.11" level="project" />
+    <orderEntry type="library" exported="" name="jama-1.0.2" level="project" />
+    <orderEntry type="library" name="junit-4.11" level="project" />
   </component>
 </module>
 
