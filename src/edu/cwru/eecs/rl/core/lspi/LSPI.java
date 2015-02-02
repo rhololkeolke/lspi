@@ -69,15 +69,15 @@ public class LSPI implements Serializable {
             // phi(s,a)
 			Matrix phi1 = policy.getPhi(sample.currState, sample.action);
 			// phi(s,a)
-			Matrix phi2 = phi1;
+			Matrix phi2 = phi1.copy();
 			// phi(s', pi(s'))
 			Matrix phi3 = policy.getPhi(sample.nextState, bestAction);
 			
 			// update A
-			A.plusEquals(phi1.times(phi2.minus(phi3.times(gamma)).transpose()));
+			A.plusEquals(phi1.times(phi2.minusEquals(phi3.timesEquals(gamma)).transpose()));
 			
 			// update b
-			b.plusEquals(phi1.times(sample.reward));
+			b.plusEquals(phi1.timesEquals(sample.reward));
 		}
 
         Matrix x = A.solve(b);
