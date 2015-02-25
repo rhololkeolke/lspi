@@ -128,8 +128,10 @@ public class LSPI implements Serializable {
             b.set(i, 0, b.get(i, 0) + sample.reward);
         }
 
-        int maxIterations = 100;
-        double tolerance = .1;
+        // TODO: check if matrix A is singular before attempting to solve the matrix
+
+        int maxIterations = 1000;
+        double tolerance = .001;
 
         // initial guess for x is random
         // TODO: change this to the last policy
