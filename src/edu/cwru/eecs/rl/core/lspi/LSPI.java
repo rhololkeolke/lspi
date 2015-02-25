@@ -4,7 +4,6 @@ import Jama.Matrix;
 import edu.cwru.eecs.rl.basisFunctions.ExactBasis;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
-import linalg.SparseMatrix;
 
 import java.io.Serializable;
 import java.util.*;
@@ -97,7 +96,6 @@ public class LSPI implements Serializable {
         }
 
         int k = policy.basis.size();
-        SparseMatrix spA = SparseMatrix.diagonal(k, .01);
         Matrix A = Matrix.identity(k, k).times(.01);
         Matrix b = new Matrix(k, 1);
 
@@ -117,55 +115,18 @@ public class LSPI implements Serializable {
 
             if(i == j)
             {
-                spA.update(i, i, 1-gamma);
+                A.set(i, i, A.get(i, i) + (1-gamma));
             }
             else
             {
-                spA.update(i, i, 1);
-                spA.update(i, j, -gamma);
+                A.set(i, i, A.get(i, i) + 1);
+                A.set(i, j, A.get(i, j) - gamma);
             }
 
             b.set(i, 0, b.get(i, 0) + sample.reward);
         }
 
-        // TODO: check if matrix A is singular before attempting to solve the matrix
-
-        int maxIterations = 1000;
-        double tolerance = .001;
-
-        // initial guess for x is random
-        // TODO: change this to the last policy
-        Matrix x = Matrix.random(k, 1);
-        boolean converged = false;
-        double normInf = Double.MAX_VALUE;
-        for(int iter=0; iter<maxIterations; iter++)
-        {
-            // calculate the residual
-            Matrix r = b.minus(spA.times(x));
-
-            // calculate the learning rate
-            double alpha_numer = dotProduct(r, r); // TODO: Could be more efficient if dotProduct realizes that the two are the same
-            Matrix alpha_vec_denom = spA.times(r);
-            double alpha_denom = dotProduct(r, alpha_vec_denom);
-
-            Matrix deltaX = r.times(alpha_numer/alpha_denom);
-
-            normInf = deltaX.normInf();
-            if(normInf < tolerance) {
-                System.out.println("Steepest gradient converged at iteration " + iter + " with deltaX.inf(): " + normInf);
-                converged = true;
-                break;
-            }
-
-            // update x
-            x.plusEquals(deltaX);
-        }
-
-        if(!converged)
-        {
-            System.err.println("Steepest gradient failed to converge within " + maxIterations + " iterations with error: " + normInf);
-        }
-        return x;
+        return A.solve(b);
     }
 
     public static Matrix LSTDQExactWithWeighting(List<Sample> samples, Policy policy, double gamma) {
@@ -323,20 +284,5 @@ public class LSPI implements Serializable {
         }
         sb.append("]");
         return sb.toString();
-    }
-
-    private static double dotProduct(Matrix x, Matrix y)
-    {
-        if(x.getRowDimension() != y.getRowDimension())
-            throw new IllegalArgumentException("Vector dimensions do not match. " + x.getRowDimension() + " != " + y.getRowDimension());
-        if(x.getColumnDimension() != 1 || y.getColumnDimension() != 1)
-            throw new IllegalArgumentException("Inputs are not vectors");
-
-        double result = 0;
-        for(int i=0; i<x.getRowDimension(); i++)
-        {
-            result += x.get(i, 0) * y.get(i, 0);
-        }
-        return result;
     }
 }
