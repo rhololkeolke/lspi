@@ -1,4 +1,4 @@
-package linalg;
+package edu.cwru.eecs.linalg;
 
 import Jama.Matrix;
 

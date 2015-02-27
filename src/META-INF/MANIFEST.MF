@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: junit-4.11.jar jogl.jar commons-cli-1.2.jar guava-10.0.1.j
- ar guava-r09.jar gluegen-rt.jar jama-1.0.2.jar snakeyaml-1.14.jar mat
- labcontrol-4.0.0.jar jsc.jar
-Main-Class: edu.cwru.eecs.rl.ExperimentRunner
-
