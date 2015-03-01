@@ -7,6 +7,11 @@ ext.revision = 'git rev-list --count HEAD'.execute().text.trim()
 ext.hash = 'git rev-parse --short HEAD'.execute().text.trim()
 version = "r${revision}.${hash}"
 
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
+    }
+}
 
 jar {
     manifest {

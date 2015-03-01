@@ -1,8 +1,8 @@
 package edu.cwru.eecs.rl.types;
 
 import Jama.Matrix;
-import junit.framework.Assert;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -62,8 +62,8 @@ public class RandomPolicyTest {
 	@Test
 	public void testgetPhi() {
 		Matrix phi = randomPolicy.getPhi(new Matrix(new double[]{1}, 1), 0);
-		Assert.assertEquals(1.0, phi.get(0,0));
-        Assert.assertEquals(1, phi.getColumnDimension()*phi.getRowDimension());
+		Assert.assertEquals(1.0, phi.get(0,0), .001);
+        Assert.assertEquals(1, phi.getColumnDimension()*phi.getRowDimension(), .001);
 	}
 
 }

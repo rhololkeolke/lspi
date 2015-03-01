@@ -2,7 +2,6 @@ package edu.cwru.eecs.rl.basisFunctions;
 
 import Jama.Matrix;
 import edu.cwru.eecs.rl.types.BasisFunctions;
-import junit.framework.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
