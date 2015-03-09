@@ -1,11 +1,16 @@
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'checkstyle'
 
 sourceCompatibility = 1.8
 
 ext.revision = 'git rev-list --count HEAD'.execute().text.trim()
 ext.hash = 'git rev-parse --short HEAD'.execute().text.trim()
 version = "r${revision}.${hash}"
+
+checkstyle {
+    toolVersion = "6.4.1"
+}
 
 allprojects {
     tasks.withType(JavaCompile) {
