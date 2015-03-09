@@ -2,10 +2,10 @@ package edu.cwru.eecs.rl;
 
 import Jama.Matrix;
 import edu.cwru.eecs.rl.agent.PolicySampler;
-import edu.cwru.eecs.rl.basisFunctions.ExactBasis;
-import edu.cwru.eecs.rl.basisFunctions.FakeBasis;
-import edu.cwru.eecs.rl.basisFunctions.PolynomialBasis;
-import edu.cwru.eecs.rl.core.lspi.LSPI;
+import edu.cwru.eecs.rl.basisfunctions.ExactBasis;
+import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
+import edu.cwru.eecs.rl.basisfunctions.PolynomialBasis;
+import edu.cwru.eecs.rl.core.lspi.Lspi;
 import edu.cwru.eecs.rl.domains.Chain;
 import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
@@ -48,7 +48,7 @@ public class ChainLearnTests {
                 Matrix.random(poly_basis.size(), 1));
 
 
-        learnedPolicy = LSPI.learn(samples, learnedPolicy, .9, 1e-5, 10);
+        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);
@@ -67,7 +67,7 @@ public class ChainLearnTests {
                 exact_basis,
                 Matrix.random(exact_basis.size(), 1));
 
-        learnedPolicy = LSPI.learn(samples, learnedPolicy, .9, 1e-5, 10, LSPI.PolicyImprover.LSTDQ);
+        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);
@@ -85,7 +85,7 @@ public class ChainLearnTests {
                 exact_basis,
                 Matrix.random(exact_basis.size(), 1));
 
-        learnedPolicy = LSPI.learn(samples, learnedPolicy, .9, 1e-5, 10, LSPI.PolicyImprover.LSTDQ_EXACT);
+        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_EXACT);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);

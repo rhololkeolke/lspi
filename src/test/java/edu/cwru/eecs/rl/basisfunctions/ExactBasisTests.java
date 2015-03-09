@@ -1,4 +1,4 @@
-package edu.cwru.eecs.rl.basisFunctions;
+package edu.cwru.eecs.rl.basisfunctions;
 
 import Jama.Matrix;
 import edu.cwru.eecs.rl.types.BasisFunctions;

@@ -4,13 +4,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.Random;
 
 import Jama.Matrix;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.cwru.eecs.rl.basisFunctions.FakeBasis;
+import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
 import edu.cwru.eecs.rl.domains.Chain;
 import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;

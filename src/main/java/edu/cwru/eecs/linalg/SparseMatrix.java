@@ -9,63 +9,90 @@ import java.util.Map;
 public class SparseMatrix {
 
     private class Index {
-        public final int i, j;
 
-        public Index(int i, int j)
-        {
-            if(i < 0 || j < 0)
+        public final int rows;
+        public final int cols;
+
+        public Index(int rows, int cols) {
+            if (rows < 0 || cols < 0) {
                 throw new IllegalArgumentException("Indices must be >= 0");
+            }
 
-            this.i = i;
-            this.j = j;
+            this.rows = rows;
+            this.cols = cols;
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+        public boolean equals(Object other) {
 
-            Index index = (Index) o;
+            if (this == other) {
+                return true;
+            }
+            if (other == null || getClass() != other.getClass()) {
+                return false;
+            }
 
-            if (i != index.i) return false;
-            if (j != index.j) return false;
+            Index index = (Index) other;
+
+            if (rows != index.rows) {
+                return false;
+            }
+            if (cols != index.cols) {
+                return false;
+            }
 
             return true;
         }
 
         @Override
         public int hashCode() {
-            int result = i;
-            result = 31 * result + j;
+            int result = rows;
+            result = 31 * result + cols;
             return result;
         }
     }
 
     private Map<Index, Double> values;
-    private final int numRows, numCols;
+    private final int numRows;
+    private final int numCols;
 
-    public SparseMatrix(int numRows, int numCols)
-    {
+    /**
+     * Constructs an empty sparse matrix with the specified number of rows and columns.
+     *
+     * @param numRows Number of rows for this matrix
+     * @param numCols Number of columns for this matrix
+     */
+    public SparseMatrix(int numRows, int numCols) {
         values = new HashMap<>();
 
         this.numRows = numRows;
         this.numCols = numCols;
     }
 
-    public SparseMatrix(int numRows, int numCols, int numNonZero)
-    {
+    /**
+     * Constructs an empty sparse matrix with the specified number of rows and columns,
+     * but preallocates the specified number of spaces to be filled with non-zero elements.
+     *
+     * @param numRows Number of rows for this matrix
+     * @param numCols Number of columns for this matrix
+     * @param numNonZero Number of preallocated non-zero elements
+     */
+    public SparseMatrix(int numRows, int numCols, int numNonZero) {
         values = new HashMap<>(numNonZero);
 
         this.numRows = numRows;
         this.numCols = numCols;
     }
 
-    public SparseMatrix(SparseMatrix matrix)
-    {
+    /**
+     * Copies a sparse matrix.
+     *
+     * @param matrix Matrix to copy
+     */
+    public SparseMatrix(SparseMatrix matrix) {
         values = new HashMap<>(matrix.size());
 
-        for(Map.Entry<Index, Double> entry : matrix.values.entrySet())
-        {
+        for (Map.Entry<Index, Double> entry : matrix.values.entrySet()) {
             values.put(entry.getKey(), entry.getValue());
         }
 
@@ -73,15 +100,16 @@ public class SparseMatrix {
         this.numCols = matrix.numCols;
     }
 
-    // Convert a dense matrix to a sparse matrix
-    public SparseMatrix(Matrix matrix)
-    {
-        values = new HashMap<>(matrix.getRowDimension()*matrix.getColumnDimension());
+    /**
+     * Converts a dense matrix to a sparse matrix.
+     *
+     * @param matrix Dense matrix to convert
+     */
+    public SparseMatrix(Matrix matrix) {
+        values = new HashMap<>(matrix.getRowDimension() * matrix.getColumnDimension());
 
-        for(int i=0; i<matrix.getRowDimension(); i++)
-        {
-            for(int j=0; j<matrix.getColumnDimension(); j++)
-            {
+        for (int i = 0; i < matrix.getRowDimension(); i++) {
+            for (int j = 0; j < matrix.getColumnDimension(); j++) {
                 values.put(new Index(i, j), matrix.get(i, j));
             }
         }
@@ -90,83 +118,121 @@ public class SparseMatrix {
         this.numCols = matrix.getColumnDimension();
     }
 
-    public int size()
-    {
+    public int size() {
         return values.size();
     }
 
-    public double get(int i, int j)
-    {
-        if(i < 0 || i > numRows || j < 0 || j > numCols)
-            throw new IndexOutOfBoundsException("Invalid matrix index (" + i +"," + j + ")");
+    /**
+     * Get the element at the specified row and column.
+     *
+     * @param row Row of the element
+     * @param col Column of the element
+     * @return The value of the element at that index
+     */
+    public double get(int row, int col) {
+        if (row < 0 || row > numRows || col < 0 || col > numCols) {
+            throw new IndexOutOfBoundsException("Invalid matrix index (" + row + "," + col + ")");
+        }
 
-        return values.getOrDefault(new Index(i, j), 0.0);
+        return values.getOrDefault(new Index(row, col), 0.0);
     }
 
-    public void set(int i, int j, double value)
-    {
-        if(i < 0 || i > numRows || j < 0 || j > numCols)
-            throw new IndexOutOfBoundsException("Invalid matrix index (" + i +"," + j + ")");
-        values.put(new Index(i, j), value);
+    /**
+     * Set the element at the specified row and column to the specified value.
+     *
+     * @param row Row of the element
+     * @param col Column of the element
+     * @param value Value to set element to
+     */
+    public void set(int row, int col, double value) {
+        if (row < 0 || row > numRows || col < 0 || col > numCols) {
+            throw new IndexOutOfBoundsException("Invalid matrix index (" + row + "," + col + ")");
+        }
+        values.put(new Index(row, col), value);
     }
 
-    // add value to current value at index (i, j)
-    public void update(int i, int j, double value)
-    {
-        if(i < 0 || i > numRows || j < 0 || j > numCols)
-            throw new IndexOutOfBoundsException("Invalid matrix index (" + i +"," + j + ")");
+    /**
+     * Add the specified value to the value at the specified row and column.
+     *
+     * @param row Row of the element to update
+     * @param col Column of the element to update
+     * @param value Value to add to the existing element
+     */
+    public void update(int row, int col, double value) {
+        if (row < 0 || row > numRows || col < 0 || col > numCols) {
+            throw new IndexOutOfBoundsException("Invalid matrix index (" + row + "," + col + ")");
+        }
 
-        Index index = new Index(i, j);
+        Index index = new Index(row, col);
         values.put(index, values.getOrDefault(index, 0.0) + value);
     }
 
-    // sparse matrix times a dense vector
-    public Matrix times(Matrix x)
-    {
-        if(x.getColumnDimension() > 1)
+    /**
+     * Multiply this sparse matrix by the specified dense vector.
+     *
+     * @param denseMat The dense vector to multiply by
+     * @return The resulting dense vector
+     */
+    public Matrix times(Matrix denseMat) {
+        if (denseMat.getColumnDimension() > 1) {
             throw new IllegalArgumentException("Can only multiply by a dense vector");
-
-        if(x.getRowDimension() != numCols)
-            throw new IllegalArgumentException("Matrix and vector dimensions don't match." +
-                    " (" + numRows + "," + numCols + ") times " + x.getRowDimension() + " vector.");
-
-        Matrix y = new Matrix(x.getRowDimension(), 1);
-
-        for(Map.Entry<Index, Double> entry : values.entrySet())
-        {
-            Index key = entry.getKey();
-            y.set(key.i, 0, y.get(key.i, 0) + entry.getValue()*x.get(key.j, 0));
         }
 
-        return y;
+        if (denseMat.getRowDimension() != numCols) {
+            throw new IllegalArgumentException("Matrix and vector dimensions don't match."
+                    + " (" + numRows + "," + numCols + ") times "
+                    + denseMat.getRowDimension() + " vector.");
+        }
+
+        Matrix resultMat = new Matrix(denseMat.getRowDimension(), 1);
+
+        for (Map.Entry<Index, Double> entry : values.entrySet()) {
+            Index key = entry.getKey();
+            resultMat.set(key.rows, 0, resultMat.get(key.rows, 0)
+                    + entry.getValue() * denseMat.get(key.cols, 0));
+        }
+
+        return resultMat;
     }
 
-    // in place multiplication
-    public SparseMatrix times(double x)
-    {
-        for(Map.Entry<Index, Double> entry : values.entrySet())
-        {
-            entry.setValue(entry.getValue()*x);
+    /**
+     * In place multiplication of a scalar.
+     *
+     * @param scalar Scalar to multiply by
+     * @return This matrix
+     */
+    public SparseMatrix times(double scalar) {
+        for (Map.Entry<Index, Double> entry : values.entrySet()) {
+            entry.setValue(entry.getValue() * scalar);
         }
 
         return this;
     }
 
-    public static SparseMatrix identity(int n)
-    {
-        SparseMatrix result = new SparseMatrix(n, n, n);
-        for(int i=0; i<n; i++)
-        {
+    /**
+     * Construct a square identity matrix of the specified size.
+     *
+     * @param matrixDim Size of the square matrix
+     * @return Identity matrix that is matrixDim x matrixDim in size
+     */
+    public static SparseMatrix identity(int matrixDim) {
+        SparseMatrix result = new SparseMatrix(matrixDim, matrixDim, matrixDim);
+        for (int i = 0; i < matrixDim; i++) {
             result.set(i, i, 1.0);
         }
         return result;
     }
 
-    public static SparseMatrix diagonal(int n, double value)
-    {
-        SparseMatrix result = new SparseMatrix(n, n, n);
-        for(int i=0; i<n; i++)
-        {
+    /**
+     * Constructs a sparse matrix with the diagonal set to the specified value.
+     *
+     * @param matrixDim Size of the square matrix
+     * @param value Value to set the diagonals to
+     * @return Resulting sparse diagonal matrix
+     */
+    public static SparseMatrix diagonal(int matrixDim, double value) {
+        SparseMatrix result = new SparseMatrix(matrixDim, matrixDim, matrixDim);
+        for (int i = 0; i < matrixDim; i++) {
             result.set(i, i, value);
         }
         return result;

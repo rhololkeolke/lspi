@@ -1,4 +1,4 @@
-package edu.cwru.eecs.rl.basisFunctions;
+package edu.cwru.eecs.rl.basisfunctions;
 
 import static org.junit.Assert.assertEquals;
 
@@ -11,14 +11,14 @@ public class GaussianRBFTests {
 
 	@Test
 	public void testNumBasisCalculation() {
-		BasisFunctions gaussRBF = new GaussianRBF(3, 3, 3);
+		BasisFunctions gaussRBF = new GaussianRbf(3, 3, 3);
 		
 		assertEquals(30, gaussRBF.size());
 	}
 	
 	@Test
 	public void test0AngleAnd0Velocity() {
-		BasisFunctions gaussRBF = new GaussianRBF(3, 3, 3);
+		BasisFunctions gaussRBF = new GaussianRbf(3, 3, 3);
 		
 		double[] state = {0,0};
 		Matrix phi = gaussRBF.evaluate(new Matrix(state, state.length), 0);

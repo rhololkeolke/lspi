@@ -6,9 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.cwru.eecs.rl.basisFunctions.FakeBasis;
-
-import java.util.Vector;
+import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
 
 @SuppressWarnings("deprecation")
 public class RandomPolicyTest {
@@ -52,7 +50,7 @@ public class RandomPolicyTest {
 	public void testQValue() {
         double QValue = 0;
         try {
-            QValue = randomPolicy.QValue(new Matrix(new double[]{1}, 1), 0);
+            QValue = randomPolicy.stateActionValue(new Matrix(new double[]{1}, 1), 0);
         } catch (Exception e) {
             e.printStackTrace();
         }

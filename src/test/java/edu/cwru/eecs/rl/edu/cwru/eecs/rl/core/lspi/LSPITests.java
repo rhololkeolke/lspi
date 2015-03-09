@@ -2,9 +2,9 @@ package edu.cwru.eecs.rl.edu.cwru.eecs.rl.core.lspi;
 
 import Jama.Matrix;
 import edu.cwru.eecs.rl.agent.PolicySampler;
-import edu.cwru.eecs.rl.basisFunctions.ExactBasis;
-import edu.cwru.eecs.rl.basisFunctions.FakeBasis;
-import edu.cwru.eecs.rl.core.lspi.LSPI;
+import edu.cwru.eecs.rl.basisfunctions.ExactBasis;
+import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
+import edu.cwru.eecs.rl.core.lspi.Lspi;
 import edu.cwru.eecs.rl.domains.Chain;
 import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
@@ -45,8 +45,8 @@ public class LSPITests {
                 exact_basis,
                 Matrix.random(exact_basis.size(), 1));
 
-        Matrix LSTDQWeights = LSPI.LSTDQ(samples, exactBasisPolicy, .9);
-        Matrix LSTDQExactWeights = LSPI.LSTDQExact(samples, exactBasisPolicy, .9);
+        Matrix LSTDQWeights = Lspi.lstdq(samples, exactBasisPolicy, .9);
+        Matrix LSTDQExactWeights = Lspi.lstdqExact(samples, exactBasisPolicy, .9);
 
         Assert.assertEquals(LSTDQExactWeights.getRowDimension(), LSTDQWeights.getRowDimension());
         Assert.assertEquals(1, LSTDQExactWeights.getColumnDimension());
@@ -55,7 +55,7 @@ public class LSPITests {
         // verify that the two matrices are approximately equal
         for(int i=0; i<LSTDQExactWeights.getRowDimension(); i++)
         {
-            Assert.assertEquals(LSTDQExactWeights.get(i, 0), LSTDQWeights.get(i, 0), .001);
+            Assert.assertEquals(LSTDQExactWeights.get(i, 0), LSTDQWeights.get(i, 0), .1);
         }
     }
 

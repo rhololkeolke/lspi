@@ -1,4 +1,4 @@
-package edu.cwru.eecs.rl.basisFunctions;
+package edu.cwru.eecs.rl.basisfunctions;
 
 import static org.junit.Assert.assertEquals;
 

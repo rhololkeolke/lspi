@@ -2,9 +2,9 @@ package edu.cwru.eecs.rl;
 
 import Jama.Matrix;
 import edu.cwru.eecs.rl.agent.PolicySampler;
-import edu.cwru.eecs.rl.basisFunctions.FakeBasis;
-import edu.cwru.eecs.rl.basisFunctions.GaussianRBF;
-import edu.cwru.eecs.rl.core.lspi.LSPI;
+import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
+import edu.cwru.eecs.rl.basisfunctions.GaussianRbf;
+import edu.cwru.eecs.rl.core.lspi.Lspi;
 import edu.cwru.eecs.rl.domains.Pendulum;
 import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
@@ -38,13 +38,13 @@ public class PendulumLearnTests {
 
     @Test
     public void testPendulumLearnWithRBFBasis() {
-        BasisFunctions rbf_basis = new GaussianRBF(3, 3, 3);
+        BasisFunctions rbf_basis = new GaussianRbf(3, 3, 3);
         Policy learnedPolicy = new Policy(0,
                 simulator.numActions(),
                 rbf_basis,
                 Matrix.random(rbf_basis.size(), 1));
 
-        learnedPolicy = LSPI.learn(samples, learnedPolicy, .9, 1e-5, 10);
+        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);

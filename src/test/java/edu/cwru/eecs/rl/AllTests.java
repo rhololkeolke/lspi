@@ -1,6 +1,6 @@
 package edu.cwru.eecs.rl;
 
-import edu.cwru.eecs.rl.basisFunctions.*;
+import edu.cwru.eecs.rl.basisfunctions.*;
 import edu.cwru.eecs.rl.edu.cwru.eecs.rl.core.lspi.LSPITests;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
