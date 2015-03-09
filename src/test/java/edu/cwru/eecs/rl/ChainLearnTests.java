@@ -18,7 +18,7 @@ import org.junit.Test;
 import java.util.List;
 
 /**
- * Created by rhol on 8/4/14.
+ * Created by Devin on 8/4/14.
  */
 public class ChainLearnTests {
 
