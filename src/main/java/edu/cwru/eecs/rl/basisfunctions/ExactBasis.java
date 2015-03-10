@@ -13,8 +13,7 @@ public class ExactBasis implements BasisFunctions, Serializable {
 
     /**
      * Constructs ExactBasis instance.
-     * <p/>
-     * <p/>
+     * <p>
      * numStates contains the number of possible values for each part of the state vector. For
      * example a state that consists of x and y position in a 10x10 grid would have a numStates
      * value of {10, 10}.

@@ -13,8 +13,7 @@ public class GaussianRbf implements BasisFunctions, Serializable {
     /**
      * Constructs a new 2D Gaussian RBF with the specified number of centers in the x and y
      * directions.
-     * <p/>
-     * <p/>
+     <p>
      * This should probably be generalized to any dimension.
      *
      * @param numFx      Number of centers in first dimension
