@@ -233,6 +233,7 @@ public class Lspi implements Serializable {
      * ExactBasis. These types of basis functions return a vector that is all zeros except for one
      * element that is equal to 1. This allows for optimizations which skip calculating the
      * intermediate matrices.
+     *
      * <p>
      * Tries to correct for biased sampling by reweighting samples.
      *
@@ -328,6 +329,7 @@ public class Lspi implements Serializable {
      * ExactBasis. These types of basis functions return a vector that is all zeros except for one
      * element that is equal to 1. This allows for optimizations which skip calculating the
      * intermediate matrices.
+     *
      * <p>
      * Utilizes the iterative construction of the inverse matrix B from the LSPI paper.
      *
