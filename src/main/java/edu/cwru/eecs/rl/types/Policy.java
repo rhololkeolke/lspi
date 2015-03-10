@@ -5,7 +5,7 @@ import Jama.Matrix;
 import java.io.Serializable;
 
 public class Policy implements Serializable {
-    
+
     public double explore;
     public int actions;
     public BasisFunctions basis;
@@ -14,11 +14,11 @@ public class Policy implements Serializable {
     /**
      * Constructs a policy.
      *
-     * @param explore Probability of choosing an action randomly.
-     *                (0 means follow the policy exactly)
+     * @param explore    Probability of choosing an action randomly. (0 means follow the policy
+     *                   exactly)
      * @param numActions Number of actions in the policy
-     * @param basis Basis function to use when calculating best action
-     * @param weights Weights for the basis function features
+     * @param basis      Basis function to use when calculating best action
+     * @param weights    Weights for the basis function features
      */
     public Policy(double explore, int numActions, BasisFunctions basis, Matrix weights) {
         this.explore = explore;
@@ -28,8 +28,8 @@ public class Policy implements Serializable {
     }
 
     /**
-     * Construct a copy of the old policy. The weights
-     * are a deep copy, but the basis function is a shallow copy.
+     * Construct a copy of the old policy. The weights are a deep copy, but the basis function is a
+     * shallow copy.
      *
      * @param oldPolicy Policy to copy
      */
@@ -60,9 +60,9 @@ public class Policy implements Serializable {
      */
     public int evaluate(Matrix state) throws Exception {
         int bestAction = 0;
-        
+
         if (Math.random() < this.explore) {
-            bestAction = (int)(Math.random() * actions);
+            bestAction = (int) (Math.random() * actions);
         } else {
             double bestQ = Double.NEGATIVE_INFINITY;
             for (int action = 0; action < actions; action++) {
@@ -79,7 +79,7 @@ public class Policy implements Serializable {
     /**
      * Returns the state-action value for the given state action pair.
      *
-     * @param state State to calculate Q function for
+     * @param state  State to calculate Q function for
      * @param action Action to calculate Q function for
      * @return State-action function value for specified state-action pair
      * @throws Exception If state dimensions do not match weight dimensions
@@ -99,10 +99,9 @@ public class Policy implements Serializable {
     }
 
     /**
-     * Returns the phi matrix (i.e. the basis function evaluated for a given
-     * state action pair).
+     * Returns the phi matrix (i.e. the basis function evaluated for a given state action pair).
      *
-     * @param state State to evaluate basis for
+     * @param state  State to evaluate basis for
      * @param action Action to evaluate basis for.
      * @return Vector of basis function features.
      */

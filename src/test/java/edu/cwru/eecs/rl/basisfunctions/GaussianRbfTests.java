@@ -2,26 +2,25 @@ package edu.cwru.eecs.rl.basisfunctions;
 
 import static org.junit.Assert.assertEquals;
 
+import edu.cwru.eecs.rl.types.BasisFunctions;
 import Jama.Matrix;
 import org.junit.Test;
 
-import edu.cwru.eecs.rl.types.BasisFunctions;
-
-public class GaussianRBFTests {
+public class GaussianRbfTests {
 
     @Test
     public void testNumBasisCalculation() {
-        BasisFunctions gaussRBF = new GaussianRbf(3, 3, 3);
+        BasisFunctions gaussRbf = new GaussianRbf(3, 3, 3);
 
-        assertEquals(30, gaussRBF.size());
+        assertEquals(30, gaussRbf.size());
     }
 
     @Test
     public void test0AngleAnd0Velocity() {
-        BasisFunctions gaussRBF = new GaussianRbf(3, 3, 3);
+        BasisFunctions gaussRbf = new GaussianRbf(3, 3, 3);
 
-        double[] state = {0,0};
-        Matrix phi = gaussRBF.evaluate(new Matrix(state, state.length), 0);
+        double[] state = {0, 0};
+        Matrix phi = gaussRbf.evaluate(new Matrix(state, state.length), 0);
 
         // test for action 0
         assertEquals(1.000, phi.get(0, 0), .001);
@@ -56,7 +55,7 @@ public class GaussianRBFTests {
         assertEquals(0.000, phi.get(29, 0), .001);
 
         // test for action 1
-        phi = gaussRBF.evaluate(new Matrix(state, state.length), 1);
+        phi = gaussRbf.evaluate(new Matrix(state, state.length), 1);
         assertEquals(0.000, phi.get(0, 0), .001);
         assertEquals(0.000, phi.get(1, 0), .001);
         assertEquals(0.000, phi.get(2, 0), .001);
@@ -89,7 +88,7 @@ public class GaussianRBFTests {
         assertEquals(0.000, phi.get(29, 0), .001);
 
         // test for action 2
-        phi = gaussRBF.evaluate(new Matrix(state, state.length), 2);
+        phi = gaussRbf.evaluate(new Matrix(state, state.length), 2);
         assertEquals(0.000, phi.get(0, 0), .001);
         assertEquals(0.000, phi.get(1, 0), .001);
         assertEquals(0.000, phi.get(2, 0), .001);

@@ -13,18 +13,17 @@ import java.util.List;
 import java.util.Map;
 
 public class Lspi implements Serializable {
-    
-    public enum PolicyImprover { LSTDQ, LSTDQ_EXACT, LSTDQ_EXACT_WITH_WEIGHTING, LSTDQ_OPT_EXACT}
+
+    public enum PolicyImprover {LSTDQ, LSTDQ_EXACT, LSTDQ_EXACT_WITH_WEIGHTING, LSTDQ_OPT_EXACT}
 
     /**
-     * Learn the policy given the samples and initial policy.
-     * Uses the lstdq Policy Improver.
+     * Learn the policy given the samples and initial policy. Uses the lstdq Policy Improver.
      *
-     * @param samples List of samples from the enviroment that the policy applies to
+     * @param samples       List of samples from the enviroment that the policy applies to
      * @param initialPolicy Starting policy. Can be random weights.
-     * @param gamma Discount factor
-     * @param epsilon lstdq policy improvement tolerance.
-     *                Stops when policy changes by less than epsilon.
+     * @param gamma         Discount factor
+     * @param epsilon       lstdq policy improvement tolerance. Stops when policy changes by less
+     *                      than epsilon.
      * @param maxIterations If tolerance is not achieved by maxIterations then stop.
      * @return The learned policy
      */
@@ -34,23 +33,22 @@ public class Lspi implements Serializable {
                                double epsilon,
                                int maxIterations) {
         return Lspi.learn(samples,
-                initialPolicy,
-                gamma,
-                epsilon,
-                maxIterations,
-                PolicyImprover.LSTDQ);
+                          initialPolicy,
+                          gamma,
+                          epsilon,
+                          maxIterations,
+                          PolicyImprover.LSTDQ);
     }
 
     /**
-     * Learn the policy given the samples and initial policy.
-     * Uses the lstdq Policy Improver.
+     * Learn the policy given the samples and initial policy. Uses the lstdq Policy Improver.
      *
-     * @param samples List of samples from the enviroment that the policy applies to
-     * @param initialPolicy Starting policy. Can be random weights.
-     * @param gamma Discount factor
-     * @param epsilon lstdq policy improvement tolerance.
-     *                Stops when policy changes by less than epsilon.
-     * @param maxIterations If tolerance is not achieved by maxIterations then stop.
+     * @param samples        List of samples from the enviroment that the policy applies to
+     * @param initialPolicy  Starting policy. Can be random weights.
+     * @param gamma          Discount factor
+     * @param epsilon        lstdq policy improvement tolerance. Stops when policy changes by less
+     *                       than epsilon.
+     * @param maxIterations  If tolerance is not achieved by maxIterations then stop.
      * @param policyImprover Specifies the lstdq strategy
      * @return The learned policy
      */
@@ -63,7 +61,7 @@ public class Lspi implements Serializable {
         Policy oldPolicy;
         Policy newPolicy = initialPolicy;
         int iteration = 0;
-        
+
         do {
             oldPolicy = new Policy(newPolicy);
             switch (policyImprover) {
@@ -82,32 +80,32 @@ public class Lspi implements Serializable {
             iteration++;
             System.out.println("distance: " + newPolicy.weights.minus(oldPolicy.weights).normF());
         } while (newPolicy.weights.minus(oldPolicy.weights).normF() > epsilon
-                && iteration <= maxIterations);
+                 && iteration <= maxIterations);
 
-        
         if (iteration >= maxIterations) {
             System.out.println("Lspi failed to converge within " + maxIterations);
             System.out.println("Epsilon: " + epsilon
-                    + " Distance: " + newPolicy.weights.minus(oldPolicy.weights).normF());
+                               + " Distance: " + newPolicy.weights.minus(oldPolicy.weights)
+                .normF());
         }
-        
+
         return newPolicy;
     }
 
     /**
-     * Performs an policy improvement iteration. This method assumes nothing
-     * about the basis functions and should work for all domains.
+     * Performs an policy improvement iteration. This method assumes nothing about the basis
+     * functions and should work for all domains.
      *
      * @param samples List of samples to learn from
-     * @param policy Current policy to improve
-     * @param gamma Discount factor
+     * @param policy  Current policy to improve
+     * @param gamma   Discount factor
      * @return New policy weights
      */
     public static Matrix lstdq(List<Sample> samples, Policy policy, double gamma) {
         int basisSize = policy.basis.size();
         Matrix matA = Matrix.identity(basisSize, basisSize).times(.01);
         Matrix vecB = new Matrix(basisSize, 1);
-        
+
         for (Sample sample : samples) {
             // Find the value of pi(s')
             int bestAction = 0;
@@ -124,10 +122,10 @@ public class Lspi implements Serializable {
             Matrix phi2 = phi1.copy();
             // phi(s', pi(s'))
             Matrix phi3 = policy.getPhi(sample.nextState, bestAction);
-            
+
             // update matA
             matA.plusEquals(phi1.times(phi2.minusEquals(phi3.timesEquals(gamma)).transpose()));
-            
+
             // update vecB
             vecB.plusEquals(phi1.timesEquals(sample.reward));
         }
@@ -138,14 +136,14 @@ public class Lspi implements Serializable {
     }
 
     /**
-     * Performs and LSTDQ iteration. This method only works when the basis function
-     * is of type ExactBasis. These types of basis functions return a vector that is all
-     * zeros except for one element that is equal to 1. This allows for optimizations
-     * which skip calculating the intermediate matrices.
+     * Performs and LSTDQ iteration. This method only works when the basis function is of type
+     * ExactBasis. These types of basis functions return a vector that is all zeros except for one
+     * element that is equal to 1. This allows for optimizations which skip calculating the
+     * intermediate matrices.
      *
      * @param samples List of samples to learn from
-     * @param policy Current policy to improve
-     * @param gamma Discount factor
+     * @param policy  Current policy to improve
+     * @param gamma   Discount factor
      * @return Updated policy weights
      */
     public static Matrix lstdqExact(List<Sample> samples, Policy policy, double gamma) {
@@ -154,7 +152,8 @@ public class Lspi implements Serializable {
             basis = (ExactBasis) policy.basis;
         } else {
             System.err.println("LSTDQExact requires a policy with a "
-                    + "basis function of class ExactBasis.class. Running normal LSTDQ instead.");
+                               + "basis function of class ExactBasis.class. "
+                               + "Running normal LSTDQ instead.");
             return lstdq(samples, policy, gamma);
         }
 
@@ -210,7 +209,7 @@ public class Lspi implements Serializable {
             normInf = deltaX.normInf();
             if (normInf < tolerance) {
                 System.out.println("Steepest gradient converged at iteration "
-                        + iter + " with deltaX.inf(): " + normInf);
+                                   + iter + " with deltaX.inf(): " + normInf);
                 converged = true;
                 break;
             }
@@ -221,26 +220,26 @@ public class Lspi implements Serializable {
 
         if (!converged) {
             System.err.println("Steepest gradient failed to converge within "
-                    + maxIterations + " iterations with error: " + normInf);
+                               + maxIterations + " iterations with error: " + normInf);
         } else {
             System.out.println("Steepest gradient converged within "
-                    + maxIterations + " iterations");
+                               + maxIterations + " iterations");
         }
         return weightVec;
     }
 
     /**
-     * Performs and LSTDQ iteration. This method only works when the basis function
-     * is of type ExactBasis. These types of basis functions return a vector that is all
-     * zeros except for one element that is equal to 1. This allows for optimizations
-     * which skip calculating the intermediate matrices.
-     *
-     * <p>
+     * Performs and LSTDQ iteration. This method only works when the basis function is of type
+     * ExactBasis. These types of basis functions return a vector that is all zeros except for one
+     * element that is equal to 1. This allows for optimizations which skip calculating the
+     * intermediate matrices.
+     * <p/>
+     * <p/>
      * Tries to correct for biased sampling by reweighting samples.
      *
      * @param samples List of samples to learn from
-     * @param policy Current policy to improve
-     * @param gamma Discount factor
+     * @param policy  Current policy to improve
+     * @param gamma   Discount factor
      * @return Updated policy weights
      */
     @Deprecated
@@ -252,7 +251,8 @@ public class Lspi implements Serializable {
             basis = (ExactBasis) policy.basis;
         } else {
             System.err.println("lstdqExact requires a policy with a basis "
-                    + "function of class ExactBasis.class. Running normal lstdq instead.");
+                               + "function of class ExactBasis.class. "
+                               + "Running normal lstdq instead.");
             return lstdq(samples, policy, gamma);
         }
 
@@ -260,7 +260,7 @@ public class Lspi implements Serializable {
         for (Sample sample : samples) {
             String key = stateToString(sample.currState);
             List<Double> counts = sampleWeights.containsKey(key)
-                    ? sampleWeights.get(key) : new ArrayList<Double>();
+                                  ? sampleWeights.get(key) : new ArrayList<Double>();
             for (int i = counts.size(); i < policy.actions; i++) {
                 counts.add(0.0);
             }
@@ -310,12 +310,12 @@ public class Lspi implements Serializable {
             double weight = weights.size() > sample.action ? weights.get(sample.action) : 0;
             if (currStateIndex == nextStateIndex) {
                 matA.set(currStateIndex, currStateIndex, matA.get(currStateIndex, currStateIndex)
-                        + weight * (1 - gamma));
+                                                         + weight * (1 - gamma));
             } else {
                 matA.set(currStateIndex, currStateIndex, matA.get(currStateIndex, currStateIndex)
-                        + weight);
+                                                         + weight);
                 matA.set(currStateIndex, nextStateIndex, matA.get(currStateIndex, nextStateIndex)
-                        - weight * gamma);
+                                                         - weight * gamma);
             }
 
             vecB.set(currStateIndex, 0, vecB.get(currStateIndex, 0) + weight * sample.reward);
@@ -325,17 +325,17 @@ public class Lspi implements Serializable {
     }
 
     /**
-     * Performs and LSTDQ iteration. This method only works when the basis function
-     * is of type ExactBasis. These types of basis functions return a vector that is all
-     * zeros except for one element that is equal to 1. This allows for optimizations
-     * which skip calculating the intermediate matrices.
-     *
-     * <p>
+     * Performs and LSTDQ iteration. This method only works when the basis function is of type
+     * ExactBasis. These types of basis functions return a vector that is all zeros except for one
+     * element that is equal to 1. This allows for optimizations which skip calculating the
+     * intermediate matrices.
+     * <p/>
+     * <p/>
      * Utilizes the iterative construction of the inverse matrix B from the LSPI paper.
      *
      * @param samples List of samples to learn from
-     * @param policy Current policy to improve
-     * @param gamma Discount factor
+     * @param policy  Current policy to improve
+     * @param gamma   Discount factor
      * @return Updated policy weights
      */
     @Deprecated
@@ -345,13 +345,14 @@ public class Lspi implements Serializable {
             basis = (ExactBasis) policy.basis;
         } else {
             System.err.println("lstdqOptExact requires a policy with a "
-                    + "basis function of class ExactBasis.class. Running normal lstdq instead.");
+                               + "basis function of class ExactBasis.class. "
+                               + "Running normal lstdq instead.");
             return lstdq(samples, policy, gamma);
         }
 
         int basisSize = policy.basis.size();
         // iteratively constructed inverse of matrix A. See LSPI paper
-        Matrix matB = Matrix.identity(basisSize,basisSize).times(1.0 / .01);
+        Matrix matB = Matrix.identity(basisSize, basisSize).times(1.0 / .01);
         Matrix vecB = new Matrix(basisSize, 1);
 
         for (Sample sample : samples) {
@@ -366,28 +367,29 @@ public class Lspi implements Serializable {
             int currStateIndex = basis.getStateActionIndex(sample.currState, sample.action);
             int nextStateIndex = basis.getStateActionIndex(sample.nextState, bestAction);
 
-            Matrix nextMatB = new Matrix(basisSize,basisSize);
+            Matrix nextMatB = new Matrix(basisSize, basisSize);
             if (currStateIndex == nextStateIndex) {
                 double gammaP = 1 - gamma; // gamma' =  1 - gamma
-                double denom = 1 + gammaP * matB.get(currStateIndex,currStateIndex);
+                double denom = 1 + gammaP * matB.get(currStateIndex, currStateIndex);
 
                 for (int x = 0; x < basisSize; x++) {
                     for (int y = 0; y < basisSize; y++) {
                         nextMatB.set(x, y, matB.get(x, y)
-                                - (gammaP * matB.get(x, currStateIndex)
-                                        * matB.get(currStateIndex, y)) / denom);
+                                           - (gammaP * matB.get(x, currStateIndex)
+                                              * matB.get(currStateIndex, y)) / denom);
                     }
                 }
             } else {
-                double denom = 1 + matB.get(currStateIndex,currStateIndex)
-                        - gamma * matB.get(nextStateIndex, currStateIndex);
+                double denom = 1 + matB.get(currStateIndex, currStateIndex)
+                               - gamma * matB.get(nextStateIndex, currStateIndex);
 
                 for (int x = 0; x < basisSize; x++) {
                     for (int y = 0; y < basisSize; y++) {
                         nextMatB.set(x, y,
-                                matB.get(x, y) - (-gamma * matB.get(x, currStateIndex)
-                                        * matB.get(nextStateIndex, y) + matB.get(x, currStateIndex)
-                                        * matB.get(currStateIndex, y)) / denom);
+                                     matB.get(x, y) - (-gamma * matB.get(x, currStateIndex)
+                                                       * matB.get(nextStateIndex, y)
+                                                       + matB.get(x, currStateIndex)
+                                                         * matB.get(currStateIndex, y)) / denom);
                     }
                 }
             }
@@ -417,7 +419,8 @@ public class Lspi implements Serializable {
     private static double dotProduct(Matrix vecX, Matrix vecY) {
         if (vecX.getRowDimension() != vecY.getRowDimension()) {
             throw new IllegalArgumentException("Vector dimensions do not match. "
-                    + vecX.getRowDimension() + " != " + vecY.getRowDimension());
+                                               + vecX.getRowDimension() + " != " + vecY
+                .getRowDimension());
         }
         if (vecX.getColumnDimension() != 1 || vecY.getColumnDimension() != 1) {
             throw new IllegalArgumentException("Inputs are not vectors");

@@ -3,19 +3,17 @@ package edu.cwru.eecs.rl.domains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import edu.cwru.eecs.rl.types.Sample;
 import Jama.Matrix;
 import org.junit.Before;
 import org.junit.Test;
-
-import edu.cwru.eecs.rl.types.Sample;
 
 public class DeterministicChainTests {
 
     private Chain simulator = null;
 
     @Before
-    public void createSimulator()
-    {
+    public void createSimulator() {
         simulator = new Chain(10, 1, 0);
     }
 
@@ -39,10 +37,10 @@ public class DeterministicChainTests {
         simulator.setState(new Matrix(new double[]{4}, 1));
         Sample testSample = simulator.step(0);
 
-        assertEquals(4, (int)testSample.currState.get(0, 0));
-        assertEquals(0, (int)testSample.action);
-        assertEquals(3, (int)testSample.nextState.get(0, 0));
-        assertEquals(0, (int)testSample.reward);
+        assertEquals(4, (int) testSample.currState.get(0, 0));
+        assertEquals(0, (int) testSample.action);
+        assertEquals(3, (int) testSample.nextState.get(0, 0));
+        assertEquals(0, (int) testSample.reward);
 
     }
 
@@ -51,10 +49,10 @@ public class DeterministicChainTests {
         simulator.setState(new Matrix(new double[]{4}, 1));
         Sample testSample = simulator.step(1);
 
-        assertEquals(4, (int)testSample.currState.get(0, 0));
-        assertEquals(1, (int)testSample.action);
-        assertEquals(5, (int)testSample.nextState.get(0, 0));
-        assertEquals(0, (int)testSample.reward);
+        assertEquals(4, (int) testSample.currState.get(0, 0));
+        assertEquals(1, (int) testSample.action);
+        assertEquals(5, (int) testSample.nextState.get(0, 0));
+        assertEquals(0, (int) testSample.reward);
     }
 
     @Test
@@ -62,10 +60,10 @@ public class DeterministicChainTests {
         simulator.setState(new Matrix(new double[]{0}, 1));
         Sample testSample = simulator.step(0);
 
-        assertEquals(0, (int)testSample.currState.get(0, 0));
-        assertEquals(0, (int)testSample.action);
-        assertEquals(0, (int)testSample.nextState.get(0, 0));
-        assertEquals(1, (int)testSample.reward);
+        assertEquals(0, (int) testSample.currState.get(0, 0));
+        assertEquals(0, (int) testSample.action);
+        assertEquals(0, (int) testSample.nextState.get(0, 0));
+        assertEquals(1, (int) testSample.reward);
     }
 
     @Test
@@ -73,10 +71,10 @@ public class DeterministicChainTests {
         simulator.setState(new Matrix(new double[]{9}, 1));
         Sample testSample = simulator.step(1);
 
-        assertEquals(9, (int)testSample.currState.get(0, 0));
-        assertEquals(1, (int)testSample.action);
-        assertEquals(9, (int)testSample.nextState.get(0, 0));
-        assertEquals(1, (int)testSample.reward);
+        assertEquals(9, (int) testSample.currState.get(0, 0));
+        assertEquals(1, (int) testSample.action);
+        assertEquals(9, (int) testSample.nextState.get(0, 0));
+        assertEquals(1, (int) testSample.reward);
     }
 
     @Test
@@ -86,10 +84,10 @@ public class DeterministicChainTests {
 
         Sample testSample = simulator.step(0);
 
-        assertEquals(4, (int)testSample.currState.get(0, 0));
-        assertEquals(0, (int)testSample.action);
-        assertEquals(5, (int)testSample.nextState.get(0, 0));
-        assertEquals(0, (int)testSample.reward);
+        assertEquals(4, (int) testSample.currState.get(0, 0));
+        assertEquals(0, (int) testSample.action);
+        assertEquals(5, (int) testSample.nextState.get(0, 0));
+        assertEquals(0, (int) testSample.reward);
     }
 
     @Test
@@ -99,10 +97,10 @@ public class DeterministicChainTests {
 
         Sample testSample = simulator.step(1);
 
-        assertEquals(4, (int)testSample.currState.get(0, 0));
-        assertEquals(1, (int)testSample.action);
-        assertEquals(3, (int)testSample.nextState.get(0, 0));
-        assertEquals(0, (int)testSample.reward);
+        assertEquals(4, (int) testSample.currState.get(0, 0));
+        assertEquals(1, (int) testSample.action);
+        assertEquals(3, (int) testSample.nextState.get(0, 0));
+        assertEquals(0, (int) testSample.reward);
     }
 
     @Test

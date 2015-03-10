@@ -1,6 +1,5 @@
 package edu.cwru.eecs.rl;
 
-import Jama.Matrix;
 import edu.cwru.eecs.rl.agent.PolicySampler;
 import edu.cwru.eecs.rl.basisfunctions.ExactBasis;
 import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
@@ -11,6 +10,7 @@ import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
+import Jama.Matrix;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,14 +26,17 @@ public class ChainLearnTests {
     Policy randomPolicy;
     List<Sample> samples;
 
+    /**
+     * Construct a Chain domain and collect a bunch of random samples.
+     */
     @Before
     public void setupLearner() {
         simulator = new Chain(10, .9, 0);
-        BasisFunctions fake_basis = new FakeBasis();
+        BasisFunctions fakeBasis = new FakeBasis();
         randomPolicy = new Policy(1,
-                simulator.numActions(),
-                fake_basis,
-                Matrix.random(fake_basis.size(), 1));
+                                  simulator.numActions(),
+                                  fakeBasis,
+                                  Matrix.random(fakeBasis.size(), 1));
 
         samples = PolicySampler.sample(simulator, 10, 500, randomPolicy);
     }
@@ -41,12 +44,11 @@ public class ChainLearnTests {
     @Test
     public void testChainLearnWithPolyBasis() {
 
-        BasisFunctions poly_basis = new PolynomialBasis(3, simulator.numActions());
+        BasisFunctions polyBasis = new PolynomialBasis(3, simulator.numActions());
         Policy learnedPolicy = new Policy(0,
-                simulator.numActions(),
-                poly_basis,
-                Matrix.random(poly_basis.size(), 1));
-
+                                          simulator.numActions(),
+                                          polyBasis,
+                                          Matrix.random(polyBasis.size(), 1));
 
         learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10);
 
@@ -60,12 +62,14 @@ public class ChainLearnTests {
     }
 
     @Test
-    public void testChainLearnWithExactBasisAndLSTDQ() {
-        BasisFunctions exact_basis = new ExactBasis(new int[]{simulator.numStates()}, simulator.numActions());
+    public void testChainLearnWithExactBasisAndLstdq() {
+        BasisFunctions
+            exactBasis =
+            new ExactBasis(new int[]{simulator.numStates()}, simulator.numActions());
         Policy learnedPolicy = new Policy(0,
-                simulator.numActions(),
-                exact_basis,
-                Matrix.random(exact_basis.size(), 1));
+                                          simulator.numActions(),
+                                          exactBasis,
+                                          Matrix.random(exactBasis.size(), 1));
 
         learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ);
 
@@ -78,14 +82,17 @@ public class ChainLearnTests {
     }
 
     @Test
-    public void testChainLearnWithExactBasisAndLSTDQExact() {
-        BasisFunctions exact_basis = new ExactBasis(new int[]{simulator.numStates()}, simulator.numActions());
+    public void testChainLearnWithExactBasisAndLstdqExact() {
+        BasisFunctions
+            exactBasis =
+            new ExactBasis(new int[]{simulator.numStates()}, simulator.numActions());
         Policy learnedPolicy = new Policy(0,
-                simulator.numActions(),
-                exact_basis,
-                Matrix.random(exact_basis.size(), 1));
+                                          simulator.numActions(),
+                                          exactBasis,
+                                          Matrix.random(exactBasis.size(), 1));
 
-        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_EXACT);
+        learnedPolicy =
+            Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_EXACT);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);

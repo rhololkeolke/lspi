@@ -6,19 +6,19 @@ import Jama.Matrix;
 import java.io.Serializable;
 
 public class GaussianRbf implements BasisFunctions, Serializable {
-    
+
     private int numActions;
     private int numBasis;
 
     /**
-     * Constructs a new 2D Gaussian RBF with the specified
-     * number of centers in the x and y directions.
-     *
-     * <p>
+     * Constructs a new 2D Gaussian RBF with the specified number of centers in the x and y
+     * directions.
+     * <p/>
+     * <p/>
      * This should probably be generalized to any dimension.
      *
-     * @param numFx Number of centers in first dimension
-     * @param numFy Number of centers in second dimension
+     * @param numFx      Number of centers in first dimension
+     * @param numFy      Number of centers in second dimension
      * @param numActions Number of actions for the domain
      */
     public GaussianRbf(int numFx, int numFy, int numActions) {
@@ -29,19 +29,19 @@ public class GaussianRbf implements BasisFunctions, Serializable {
     @Override
     public Matrix evaluate(Matrix state, int action) {
         Matrix phi = new Matrix(numBasis, 1);
-        
+
         if (action >= numActions || action < 0) {
             return phi; // return 0's if action number is invalid
         }
-        
+
         if (Math.abs(state.get(0, 0)) > Math.PI / 2.0) {
             return phi;
         }
-        
+
         int base = (numBasis / numActions) * action;
-        
+
         phi.set(base++, 0, 1.0);
-        
+
         double sigma2 = 1.0;
         for (double x = -Math.PI / 4.0; x <= Math.PI / 4.0; x += Math.PI / 4.0) {
             for (double y = -1.0; y <= 1.0; y += 1.0) {
@@ -49,7 +49,7 @@ public class GaussianRbf implements BasisFunctions, Serializable {
                 phi.set(base++, 0, Math.exp(-dist / (2 * sigma2)));
             }
         }
-        
+
         return phi;
     }
 

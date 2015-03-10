@@ -5,7 +5,7 @@ import Jama.Matrix;
 
 import java.io.Serializable;
 
-public class ExactBasis implements BasisFunctions, Serializable{
+public class ExactBasis implements BasisFunctions, Serializable {
 
     private int[] numStates;
     private int[] offsets;
@@ -13,13 +13,13 @@ public class ExactBasis implements BasisFunctions, Serializable{
 
     /**
      * Constructs ExactBasis instance.
+     * <p/>
+     * <p/>
+     * numStates contains the number of possible values for each part of the state vector. For
+     * example a state that consists of x and y position in a 10x10 grid would have a numStates
+     * value of {10, 10}.
      *
-     *<p>
-     * numStates contains the number of possible values for each part
-     * of the state vector. For example a state that consists of x and y
-     * position in a 10x10 grid would have a numStates value of {10, 10}.
-     *
-     * @param numStates Number of possible values for each part of the state
+     * @param numStates  Number of possible values for each part of the state
      * @param numActions Number of possible actions
      */
     public ExactBasis(int[] numStates, int numActions) {
@@ -34,11 +34,10 @@ public class ExactBasis implements BasisFunctions, Serializable{
     }
 
     /**
-     * Given a world state and an action return the index in the sparse vector
-     * that is equal to 1. There will only be one value that is non-zero and its
-     * value will be 1.
+     * Given a world state and an action return the index in the sparse vector that is equal to 1.
+     * There will only be one value that is non-zero and its value will be 1.
      *
-     * @param state Environment state
+     * @param state  Environment state
      * @param action Action being performed
      * @return Index in sparse vector equal to 1
      */

@@ -7,7 +7,7 @@ import java.io.Serializable;
 public class Sample implements Serializable {
 
     private static final long serialVersionUID = -3257281634992483010L;
-    
+
     public Matrix currState;
     public int action;
     public double reward;
@@ -18,12 +18,12 @@ public class Sample implements Serializable {
      * Constructs a sample class. Absorb is set to false.
      *
      * @param currState s
-     * @param action a
+     * @param action    a
      * @param nextState s'
-     * @param reward r
+     * @param reward    r
      */
     public Sample(Matrix currState, int action,
-            Matrix nextState, double reward) {
+                  Matrix nextState, double reward) {
         this.currState = currState.copy();
         this.action = action;
         this.nextState = nextState.copy();
@@ -35,12 +35,12 @@ public class Sample implements Serializable {
      * Constructs a sample class. Absorb is set to false.
      *
      * @param currState s
-     * @param action a
+     * @param action    a
      * @param nextState s'
-     * @param reward r
+     * @param reward    r
      */
     public Sample(double[] currState, int action,
-            double[] nextState, double reward) {
+                  double[] nextState, double reward) {
         this.currState = new Matrix(currState, currState.length);
         this.action = action;
         this.nextState = new Matrix(nextState, nextState.length);
@@ -52,13 +52,13 @@ public class Sample implements Serializable {
      * Constructs a sample class.
      *
      * @param currState s
-     * @param action a
+     * @param action    a
      * @param nextState s'
-     * @param reward r
-     * @param absorb True if this action ended the episode
+     * @param reward    r
+     * @param absorb    True if this action ended the episode
      */
     public Sample(Matrix currState, int action,
-            Matrix nextState, double reward, boolean absorb) {
+                  Matrix nextState, double reward, boolean absorb) {
         this.currState = currState.copy();
         this.action = action;
         this.nextState = nextState.copy();
@@ -70,13 +70,13 @@ public class Sample implements Serializable {
      * Constructs a sample class.
      *
      * @param currState s
-     * @param action a
+     * @param action    a
      * @param nextState s'
-     * @param reward r
-     * @param absorb True if this action ended the episode
+     * @param reward    r
+     * @param absorb    True if this action ended the episode
      */
     public Sample(double[] currState, int action,
-            double[] nextState, double reward, boolean absorb) {
+                  double[] nextState, double reward, boolean absorb) {
         this.currState = new Matrix(currState, currState.length);
         this.action = action;
         this.nextState = new Matrix(nextState, nextState.length);
@@ -89,7 +89,7 @@ public class Sample implements Serializable {
         if (other.getClass() != this.getClass()) {
             return false;
         }
-        Sample input = (Sample)other;
+        Sample input = (Sample) other;
         boolean equal = true;
         equal = equal && (this.currState.getRowDimension() == input.currState.getRowDimension());
         equal = equal
@@ -99,7 +99,7 @@ public class Sample implements Serializable {
         }
         for (int i = 0; i < this.currState.getRowDimension(); i++) {
             // this might not work because of doubles
-            equal = equal && (this.currState.get(i,0) == input.currState.get(i,0));
+            equal = equal && (this.currState.get(i, 0) == input.currState.get(i, 0));
         }
         equal = equal && (this.action == input.action);
         equal = equal && (this.nextState.getRowDimension() == input.nextState.getRowDimension());
@@ -109,10 +109,10 @@ public class Sample implements Serializable {
             return false; // no sense checking the rest if its already not equal
         }
         for (int i = 0; i < this.nextState.getRowDimension(); i++) {
-            equal = equal && (this.nextState.get(i,0) == input.nextState.get(i,0));
+            equal = equal && (this.nextState.get(i, 0) == input.nextState.get(i, 0));
         }
         equal = equal && (this.reward == input.reward);
-        
+
         return equal;
     }
 }

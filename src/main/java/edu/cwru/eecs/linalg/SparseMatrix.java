@@ -70,11 +70,11 @@ public class SparseMatrix {
     }
 
     /**
-     * Constructs an empty sparse matrix with the specified number of rows and columns,
-     * but preallocates the specified number of spaces to be filled with non-zero elements.
+     * Constructs an empty sparse matrix with the specified number of rows and columns, but
+     * preallocates the specified number of spaces to be filled with non-zero elements.
      *
-     * @param numRows Number of rows for this matrix
-     * @param numCols Number of columns for this matrix
+     * @param numRows    Number of rows for this matrix
+     * @param numCols    Number of columns for this matrix
      * @param numNonZero Number of preallocated non-zero elements
      */
     public SparseMatrix(int numRows, int numCols, int numNonZero) {
@@ -140,8 +140,8 @@ public class SparseMatrix {
     /**
      * Set the element at the specified row and column to the specified value.
      *
-     * @param row Row of the element
-     * @param col Column of the element
+     * @param row   Row of the element
+     * @param col   Column of the element
      * @param value Value to set element to
      */
     public void set(int row, int col, double value) {
@@ -154,8 +154,8 @@ public class SparseMatrix {
     /**
      * Add the specified value to the value at the specified row and column.
      *
-     * @param row Row of the element to update
-     * @param col Column of the element to update
+     * @param row   Row of the element to update
+     * @param col   Column of the element to update
      * @param value Value to add to the existing element
      */
     public void update(int row, int col, double value) {
@@ -180,8 +180,8 @@ public class SparseMatrix {
 
         if (denseMat.getRowDimension() != numCols) {
             throw new IllegalArgumentException("Matrix and vector dimensions don't match."
-                    + " (" + numRows + "," + numCols + ") times "
-                    + denseMat.getRowDimension() + " vector.");
+                                               + " (" + numRows + "," + numCols + ") times "
+                                               + denseMat.getRowDimension() + " vector.");
         }
 
         Matrix resultMat = new Matrix(denseMat.getRowDimension(), 1);
@@ -189,7 +189,7 @@ public class SparseMatrix {
         for (Map.Entry<Index, Double> entry : values.entrySet()) {
             Index key = entry.getKey();
             resultMat.set(key.rows, 0, resultMat.get(key.rows, 0)
-                    + entry.getValue() * denseMat.get(key.cols, 0));
+                                       + entry.getValue() * denseMat.get(key.cols, 0));
         }
 
         return resultMat;
@@ -227,7 +227,7 @@ public class SparseMatrix {
      * Constructs a sparse matrix with the diagonal set to the specified value.
      *
      * @param matrixDim Size of the square matrix
-     * @param value Value to set the diagonals to
+     * @param value     Value to set the diagonals to
      * @return Resulting sparse diagonal matrix
      */
     public static SparseMatrix diagonal(int matrixDim, double value) {

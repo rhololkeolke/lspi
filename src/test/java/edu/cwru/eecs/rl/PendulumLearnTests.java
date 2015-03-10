@@ -1,6 +1,5 @@
 package edu.cwru.eecs.rl;
 
-import Jama.Matrix;
 import edu.cwru.eecs.rl.agent.PolicySampler;
 import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
 import edu.cwru.eecs.rl.basisfunctions.GaussianRbf;
@@ -10,6 +9,7 @@ import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
+import Jama.Matrix;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,29 +20,33 @@ import java.util.List;
  * Created by Devin on 8/4/14.
  */
 public class PendulumLearnTests {
+
     Simulator simulator;
     Policy randomPolicy;
     List<Sample> samples;
 
+    /**
+     * Construct a default Pendulum domain and collect a bunch of random samples.
+     */
     @Before
     public void setupLearner() {
         simulator = new Pendulum();
-        BasisFunctions fake_basis = new FakeBasis();
+        BasisFunctions fakeBasis = new FakeBasis();
         randomPolicy = new Policy(1,
-                simulator.numActions(),
-                fake_basis,
-                Matrix.random(fake_basis.size(), 1));
+                                  simulator.numActions(),
+                                  fakeBasis,
+                                  Matrix.random(fakeBasis.size(), 1));
 
         samples = PolicySampler.sample(simulator, 1000, 50, randomPolicy);
     }
 
     @Test
-    public void testPendulumLearnWithRBFBasis() {
-        BasisFunctions rbf_basis = new GaussianRbf(3, 3, 3);
+    public void testPendulumLearnWithRbfBasis() {
+        BasisFunctions rbfBasis = new GaussianRbf(3, 3, 3);
         Policy learnedPolicy = new Policy(0,
-                simulator.numActions(),
-                rbf_basis,
-                Matrix.random(rbf_basis.size(), 1));
+                                          simulator.numActions(),
+                                          rbfBasis,
+                                          Matrix.random(rbfBasis.size(), 1));
 
         learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10);
 

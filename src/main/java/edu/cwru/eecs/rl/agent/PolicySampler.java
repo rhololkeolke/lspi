@@ -10,13 +10,13 @@ import java.util.List;
 public class PolicySampler {
 
     /**
-     * Given a simulator and a sampling policy this will collect samples
-     * from the specified number of episodes.
+     * Given a simulator and a sampling policy this will collect samples from the specified number
+     * of episodes.
      *
-     * @param simulator Domain to collect from
-     * @param numEpisodes Number of episodes to collect samples from
+     * @param simulator     Domain to collect from
+     * @param numEpisodes   Number of episodes to collect samples from
      * @param episodeLength Maximum number of steps per episode
-     * @param policy Sampling policy to collect samples with
+     * @param policy        Sampling policy to collect samples with
      * @return List of samples collected.
      */
     public static List<Sample> sample(Simulator simulator,
@@ -42,18 +42,18 @@ public class PolicySampler {
                 }
             }
         }
-        
+
         return samples;
     }
 
     /**
-     * Samples the given simulator with the given policy for the specified number
-     * of episodes. Then calculates the average reward and returns that.
+     * Samples the given simulator with the given policy for the specified number of episodes. Then
+     * calculates the average reward and returns that.
      *
-     * @param simulator Domain to test
-     * @param numEpisodes Number of episodes to sample from
+     * @param simulator     Domain to test
+     * @param numEpisodes   Number of episodes to sample from
      * @param episodeLength Maximum number of steps per episode
-     * @param policy Policy to sample with
+     * @param policy        Policy to sample with
      * @return The average reward over all of the samples
      */
     public static double evaluatePolicy(Simulator simulator,
@@ -61,7 +61,7 @@ public class PolicySampler {
                                         int episodeLength,
                                         Policy policy) {
         double totalRewards = 0;
-        
+
         for (int i = 0; i < numEpisodes; i++) {
             simulator.reset();
             for (int j = 0; j < episodeLength; j++) {
@@ -77,7 +77,7 @@ public class PolicySampler {
                 }
             }
         }
-        
+
         return totalRewards / numEpisodes;
     }
 }

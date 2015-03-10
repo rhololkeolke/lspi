@@ -16,13 +16,12 @@ public class ProbabilisticPendulumTests {
         assertNotEquals(0, initialState.get(1, 0));
 
         Matrix totalInitState = new Matrix(2, 1);
-        for(int i=1; i<=2000; i++)
-        {
+        for (int i = 1; i <= 2000; i++) {
             simulator = new Pendulum(i);
             totalInitState.plus(simulator.getState());
         }
 
-        totalInitState.times(1.0/2000.0);
+        totalInitState.times(1.0 / 2000.0);
 
         // check the mean
         assertEquals(0, totalInitState.get(0, 0), .01);
