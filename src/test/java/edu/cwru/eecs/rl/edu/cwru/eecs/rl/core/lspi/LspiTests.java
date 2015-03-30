@@ -51,7 +51,7 @@ public class LspiTests {
                                              Matrix.random(exactBasis.size(), 1));
 
         Matrix lstdqWeights = Lspi.lstdq(samples, exactBasisPolicy, .9);
-        Matrix lstdqExactWeights = Lspi.lstdqExact(samples, exactBasisPolicy, .9);
+        Matrix lstdqExactWeights = Lspi.lstdqExact(samples, exactBasisPolicy, .9, .001, 1000);
 
         Assert.assertEquals(lstdqExactWeights.getRowDimension(), lstdqWeights.getRowDimension());
         Assert.assertEquals(1, lstdqExactWeights.getColumnDimension());

@@ -37,7 +37,19 @@ public class Lspi implements Serializable {
                           gamma,
                           epsilon,
                           maxIterations,
-                          PolicyImprover.LSTDQ);
+                          PolicyImprover.LSTDQ,
+                          0,
+                          0);
+    }
+
+    public static Policy learn(List<Sample> samples,
+                               Policy initialPolicy,
+                               double gamma,
+                               double epsilon,
+                               int maxIterations,
+                               double tolerance,
+                               int maxSolverIterations) {
+        return Lspi.learn(samples, initialPolicy, gamma, epsilon, maxIterations, PolicyImprover.LSTDQ_EXACT, tolerance, maxSolverIterations);
     }
 
     /**
@@ -57,7 +69,9 @@ public class Lspi implements Serializable {
                                double gamma,
                                double epsilon,
                                int maxIterations,
-                               PolicyImprover policyImprover) {
+                               PolicyImprover policyImprover,
+                               double tolerance,
+                               int maxSolverIterations) {
         Policy oldPolicy;
         Policy newPolicy = initialPolicy;
         int iteration = 0;
@@ -75,7 +89,7 @@ public class Lspi implements Serializable {
                     newPolicy.weights = lstdqOptExact(samples, oldPolicy, gamma);
                     break;
                 default:
-                    newPolicy.weights = lstdqExact(samples, oldPolicy, gamma);
+                    newPolicy.weights = lstdqExact(samples, oldPolicy, gamma, tolerance, maxSolverIterations);
             }
             iteration++;
             System.out.println("distance: " + newPolicy.weights.minus(oldPolicy.weights).normF());
@@ -146,7 +160,11 @@ public class Lspi implements Serializable {
      * @param gamma   Discount factor
      * @return Updated policy weights
      */
-    public static Matrix lstdqExact(List<Sample> samples, Policy policy, double gamma) {
+    public static Matrix lstdqExact(List<Sample> samples,
+                                    Policy policy,
+                                    double gamma,
+                                    double tolerance,
+                                    int maxSolverIterations) {
         ExactBasis basis = null;
         if (policy.basis instanceof ExactBasis) {
             basis = (ExactBasis) policy.basis;
@@ -186,15 +204,12 @@ public class Lspi implements Serializable {
 
         // TODO: check if matrix A is singular before attempting to solve the matrix
 
-        int maxIterations = 2000;
-        double tolerance = .001;
-
         // initial guess for weightVec is random
         // TODO: change this to the last policy
         Matrix weightVec = Matrix.random(basisSize, 1);
         boolean converged = false;
         double normInf = Double.MAX_VALUE;
-        for (int iter = 0; iter < maxIterations; iter++) {
+        for (int iter = 0; iter < maxSolverIterations; iter++) {
             // calculate the residual
             Matrix residual = vecB.minus(matA.times(weightVec));
 
@@ -220,10 +235,10 @@ public class Lspi implements Serializable {
 
         if (!converged) {
             System.err.println("Steepest gradient failed to converge within "
-                               + maxIterations + " iterations with error: " + normInf);
+                               + maxSolverIterations + " iterations with error: " + normInf);
         } else {
             System.out.println("Steepest gradient converged within "
-                               + maxIterations + " iterations");
+                               + maxSolverIterations + " iterations");
         }
         return weightVec;
     }

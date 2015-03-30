@@ -71,7 +71,7 @@ public class ChainLearnTests {
                                           exactBasis,
                                           Matrix.random(exactBasis.size(), 1));
 
-        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ);
+        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);
@@ -92,7 +92,7 @@ public class ChainLearnTests {
                                           Matrix.random(exactBasis.size(), 1));
 
         learnedPolicy =
-            Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_EXACT);
+            Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_EXACT, .001, 1000);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);
