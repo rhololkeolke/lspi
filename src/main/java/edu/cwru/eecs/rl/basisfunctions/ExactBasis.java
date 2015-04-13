@@ -7,9 +7,9 @@ import java.io.Serializable;
 
 public class ExactBasis implements BasisFunctions, Serializable {
 
-    private int[] numStates;
-    private int[] offsets;
-    private int numActions;
+    protected int[] numStates;
+    protected int[] offsets;
+    protected int numActions;
 
     /**
      * Constructs ExactBasis instance.
