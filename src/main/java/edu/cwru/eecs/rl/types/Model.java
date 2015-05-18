@@ -5,6 +5,7 @@ import Jama.Matrix;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Model {
 
@@ -50,7 +51,7 @@ public class Model {
         }
     }
 
-    private static class StateActionTuple {
+    public static class StateActionTuple {
         public final Matrix s;
         public final int a;
 
@@ -131,16 +132,18 @@ public class Model {
     }
 
     public Map<MatrixWrapper, Double> getTransitionProbabilities(Matrix state, int action) {
-        Map<MatrixWrapper, Double> transitionProbabilities = new HashMap<>();
-
         StateActionTuple key = new StateActionTuple(state, action);
+        return getTransitionProbabilities(key);
+    }
 
-        int stateActionCount = stateActionCounts.getOrDefault(key, 0);
+    public Map<MatrixWrapper, Double> getTransitionProbabilities(StateActionTuple saTuple) {
+        Map<MatrixWrapper, Double> transitionProbabilities = new HashMap<>();
+        int stateActionCount = stateActionCounts.getOrDefault(saTuple, 0);
         if (stateActionCount == 0) {
             return transitionProbabilities;
         }
 
-        Map<MatrixWrapper, Integer> counts = transitionCounts.get(key);
+        Map<MatrixWrapper, Integer> counts = transitionCounts.get(saTuple);
 
         for (Map.Entry<MatrixWrapper, Integer> transitionCount : counts.entrySet()) {
             transitionProbabilities.put(transitionCount.getKey(), transitionCount.getValue()/(double)stateActionCount);
@@ -148,7 +151,7 @@ public class Model {
         return transitionProbabilities;
     }
 
-    public double getReward(Matrix state, int action) {
+    public double getTransitionProbability(Matrix state, int action, Matrix statePrime) {
         StateActionTuple key = new StateActionTuple(state, action);
 
         int stateActionCount = stateActionCounts.getOrDefault(key, 0);
@@ -156,6 +159,26 @@ public class Model {
             return 0;
         }
 
-        return rewardSums.get(key)/stateActionCount;
+        Map<MatrixWrapper, Integer> counts = transitionCounts.get(key);
+
+        return counts.getOrDefault(new MatrixWrapper(statePrime), 0)/(double)stateActionCount;
+    }
+
+    public double getReward(Matrix state, int action) {
+        StateActionTuple key = new StateActionTuple(state, action);
+        return getReward(key);
+    }
+
+    public double getReward(StateActionTuple saTuple) {
+        int stateActionCount = stateActionCounts.getOrDefault(saTuple, 0);
+        if (stateActionCount == 0) {
+            return 0;
+        }
+
+        return rewardSums.get(saTuple)/stateActionCount;
+    }
+
+    public Set<StateActionTuple> getAllStateActions() {
+        return stateActionCounts.keySet();
     }
 }

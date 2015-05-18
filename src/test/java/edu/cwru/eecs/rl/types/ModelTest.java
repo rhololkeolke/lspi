@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -81,10 +82,32 @@ public class ModelTest {
     }
 
     @Test
+    public void testGetTransitionProbability() throws Exception {
+        assertEquals(.33, model.getTransitionProbability(state0, 0, state0), .01);
+        assertEquals(.67, model.getTransitionProbability(state0, 0, state1), .01);
+        assertEquals(.93, model.getTransitionProbability(state0, 1, state0), .01);
+        assertEquals(.07, model.getTransitionProbability(state0, 1, state1), .01);
+        assertEquals(.6, model.getTransitionProbability(state1, 0, state0), .01);
+        assertEquals(.4, model.getTransitionProbability(state1, 0, state1), .01);
+        assertEquals(.29, model.getTransitionProbability(state1, 1, state0), .01);
+        assertEquals(.71, model.getTransitionProbability(state1, 1, state1), .01);
+    }
+
+    @Test
     public void testGetReward() throws Exception {
         assertEquals(.33, model.getReward(state0, 0), .01);
         assertEquals(-.86, model.getReward(state0, 1), .01);
         assertEquals(-.2, model.getReward(state1, 0), .01);
         assertEquals(.43, model.getReward(state1, 1), .01);
+    }
+
+    @Test
+    public void testGetAllStateActions() throws Exception {
+        Set<Model.StateActionTuple> stateActions = model.getAllStateActions();
+        assertEquals(4, stateActions.size());
+        assertTrue(stateActions.contains(new Model.StateActionTuple(state0, 0)));
+        assertTrue(stateActions.contains(new Model.StateActionTuple(state0, 1)));
+        assertTrue(stateActions.contains(new Model.StateActionTuple(state1, 0)));
+        assertTrue(stateActions.contains(new Model.StateActionTuple(state1, 1)));
     }
 }
