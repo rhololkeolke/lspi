@@ -8,6 +8,7 @@ import edu.cwru.eecs.rl.core.lspi.Lspi;
 import edu.cwru.eecs.rl.domains.Chain;
 import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
+import edu.cwru.eecs.rl.types.Model;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
 import Jama.Matrix;
@@ -93,6 +94,33 @@ public class ChainLearnTests {
 
         learnedPolicy =
             Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_EXACT, .001, 1000);
+
+        simulator.reset();
+        double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);
+        simulator.reset();
+        double avgLearnedRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, learnedPolicy);
+
+        Assert.assertTrue(avgLearnedRewards > avgRandomRewards);
+    }
+
+    @Test
+    public void testChainLearnWithExactBasisAndModel() {
+        BasisFunctions
+                exactBasis =
+                new ExactBasis(new int[]{simulator.numStates()}, simulator.numActions());
+        Policy learnedPolicy = new Policy(0,
+                simulator.numActions(),
+                exactBasis,
+                Matrix.random(exactBasis.size(), 1));
+
+        // construct model
+        Model model = new Model();
+        for (Sample sample : samples) {
+            model.addSample(sample);
+        }
+
+        learnedPolicy =
+                Lspi.learn(model, learnedPolicy, .9, 1e-5, 10, .001, 1000);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);

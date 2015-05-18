@@ -2,6 +2,7 @@ package edu.cwru.eecs.rl.core.lspi;
 
 import edu.cwru.eecs.linalg.SparseMatrix;
 import edu.cwru.eecs.rl.basisfunctions.ExactBasis;
+import edu.cwru.eecs.rl.types.Model;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
 import Jama.Matrix;
@@ -52,6 +53,37 @@ public class Lspi implements Serializable {
         return Lspi.learn(samples, initialPolicy, gamma, epsilon, maxIterations, PolicyImprover.LSTDQ_EXACT, tolerance, maxSolverIterations);
     }
 
+    public static Policy learn(Model model,
+                               Policy initialPolicy,
+                               double gamma,
+                               double epsilon,
+                               int maxIterations,
+                               double tolerance,
+                               int maxSolverIterations) {
+        Policy oldPolicy;
+        Policy newPolicy = initialPolicy;
+        int iteration = 0;
+
+        do {
+            oldPolicy = new Policy(newPolicy);
+            newPolicy.weights = lstdqModelExact(model, oldPolicy, gamma, tolerance, maxSolverIterations);
+            iteration++;
+            System.out.println("distance: " + newPolicy.weights.minus(oldPolicy.weights).normF());
+            System.out.println("normInf: " + newPolicy.weights.minus(oldPolicy.weights).normInf());
+        } while (newPolicy.weights.minus(oldPolicy.weights).normF() > epsilon && iteration <= maxIterations);
+
+        if (iteration >= maxIterations) {
+            System.out.println("Lspi failed to converge within " + maxIterations);
+            System.out.println("Epsilon: " + epsilon
+                    + " Distance: " + newPolicy.weights.minus(oldPolicy.weights)
+                    .normF());
+            System.out.println("normInf: " + newPolicy.weights.minus(oldPolicy.weights).normInf());
+        }
+
+        return newPolicy;
+    }
+
+
     /**
      * Learn the policy given the samples and initial policy. Uses the lstdq Policy Improver.
      *
@@ -93,6 +125,7 @@ public class Lspi implements Serializable {
             }
             iteration++;
             System.out.println("distance: " + newPolicy.weights.minus(oldPolicy.weights).normF());
+            System.out.println("normInf: " + newPolicy.weights.minus(oldPolicy.weights).normInf());
         } while (newPolicy.weights.minus(oldPolicy.weights).normF() > epsilon
                  && iteration <= maxIterations);
 
@@ -149,6 +182,43 @@ public class Lspi implements Serializable {
         return weightVec;
     }
 
+    public static Matrix lstdqModelExact(Model model,
+                                         Policy policy,
+                                         double gamma,
+                                         double tolerance,
+                                         int maxSolverIterations) {
+        ExactBasis basis = null;
+        if (policy.basis instanceof ExactBasis) {
+            basis = (ExactBasis) policy.basis;
+        } else {
+            throw new IllegalArgumentException("Policy must use ExactBasis class or one of its children");
+        }
+
+        int basisSize = policy.basis.size();
+        SparseMatrix matA = SparseMatrix.diagonal(basisSize, .01);
+        Matrix vecB = new Matrix(basisSize, 1);
+
+        for (Model.StateActionTuple saTuple : model.getAllStateActions()) {
+            int currStateIndex = basis.getStateActionIndex(saTuple.s, saTuple.a);
+            matA.update(currStateIndex, currStateIndex, 1);
+            for (Map.Entry<Model.MatrixWrapper, Double> transitionProbs : model.getTransitionProbabilities(saTuple).entrySet()) {
+                int bestAction = 0;
+                try {
+                    bestAction = policy.evaluate(transitionProbs.getKey().m);
+                } catch (Exception e) {
+                    System.err.println("Failed to evaluate the policy");
+                    e.printStackTrace();
+                }
+                int nextStateIndex = basis.getStateActionIndex(transitionProbs.getKey().m, bestAction);
+                matA.update(currStateIndex, nextStateIndex, -gamma*transitionProbs.getValue());
+            }
+
+            vecB.set(currStateIndex, 0, vecB.get(currStateIndex, 0) + model.getReward(saTuple));
+        }
+
+        return steepestDescent(matA, vecB, tolerance, maxSolverIterations);
+    }
+
     /**
      * Performs and LSTDQ iteration. This method only works when the basis function is of type
      * ExactBasis. These types of basis functions return a vector that is all zeros except for one
@@ -202,11 +272,15 @@ public class Lspi implements Serializable {
             vecB.set(currStateIndex, 0, vecB.get(currStateIndex, 0) + sample.reward);
         }
 
+        return steepestDescent(matA, vecB, tolerance, maxSolverIterations);
+    }
+
+    public static Matrix steepestDescent(SparseMatrix matA, Matrix vecB, double tolerance, int maxSolverIterations) {
         // TODO: check if matrix A is singular before attempting to solve the matrix
 
         // initial guess for weightVec is random
         // TODO: change this to the last policy
-        Matrix weightVec = Matrix.random(basisSize, 1);
+        Matrix weightVec = Matrix.random(vecB.getRowDimension(), 1);
         boolean converged = false;
         double normInf = Double.MAX_VALUE;
         for (int iter = 0; iter < maxSolverIterations; iter++) {
@@ -224,7 +298,7 @@ public class Lspi implements Serializable {
             normInf = deltaX.normInf();
             if (normInf < tolerance) {
                 System.out.println("Steepest gradient converged at iteration "
-                                   + iter + " with deltaX.inf(): " + normInf);
+                        + iter + " with deltaX.inf(): " + normInf);
                 converged = true;
                 break;
             }
@@ -235,10 +309,10 @@ public class Lspi implements Serializable {
 
         if (!converged) {
             System.err.println("Steepest gradient failed to converge within "
-                               + maxSolverIterations + " iterations with error: " + normInf);
+                    + maxSolverIterations + " iterations with error: " + normInf);
         } else {
             System.out.println("Steepest gradient converged within "
-                               + maxSolverIterations + " iterations");
+                    + maxSolverIterations + " iterations");
         }
         return weightVec;
     }
