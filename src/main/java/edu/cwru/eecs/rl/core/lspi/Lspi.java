@@ -249,11 +249,12 @@ public class Lspi implements Serializable {
         SparseMatrix matA = SparseMatrix.diagonal(basisSize, .01);
         Matrix vecB = new Matrix(basisSize, 1);
 
+        System.out.println("Evaluating samples");
         for (Sample sample : samples) {
             // Find the value of pi(s')
             int bestAction = 0;
             try {
-                bestAction = policy.evaluate(sample.nextState);
+                bestAction = policy.sparseEvaluate(sample.nextState);
             } catch (Exception e) {
                 System.err.println("Failed to evaluate the policy");
                 e.printStackTrace();
@@ -272,6 +273,7 @@ public class Lspi implements Serializable {
             vecB.set(currStateIndex, 0, vecB.get(currStateIndex, 0) + sample.reward);
         }
 
+        System.out.println("Solving matrix equations");
         return steepestDescent(matA, vecB, tolerance, maxSolverIterations);
     }
 

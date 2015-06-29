@@ -53,8 +53,8 @@ public class SparseMatrix {
     }
 
     private Map<Index, Double> values;
-    private final int numRows;
-    private final int numCols;
+    public final int numRows;
+    public final int numCols;
 
     /**
      * Constructs an empty sparse matrix with the specified number of rows and columns.
@@ -189,7 +189,7 @@ public class SparseMatrix {
         for (Map.Entry<Index, Double> entry : values.entrySet()) {
             Index key = entry.getKey();
             resultMat.set(key.rows, 0, resultMat.get(key.rows, 0)
-                                       + entry.getValue() * denseMat.get(key.cols, 0));
+                    + entry.getValue() * denseMat.get(key.cols, 0));
         }
 
         return resultMat;
@@ -207,6 +207,40 @@ public class SparseMatrix {
         }
 
         return this;
+    }
+
+    public double dot(Matrix denseMat) {
+        if (denseMat.getColumnDimension() > 1) {
+            throw new IllegalArgumentException("Can only multiply by a vector");
+        }
+
+        if (denseMat.getRowDimension() != numRows) {
+            throw new IllegalArgumentException("Vector dimensions don't match.");
+        }
+
+        double total = 0;
+        for (Map.Entry<Index, Double> entry : values.entrySet()) {
+            Index key = entry.getKey();
+            total += entry.getValue() * denseMat.get(key.rows, 0);
+        }
+        return total;
+    }
+
+    public double dot(SparseMatrix sparseMat) {
+        if (sparseMat.numCols > 1) {
+            throw new IllegalArgumentException("Can only multiply by a vector");
+        }
+
+        if (sparseMat.numRows != numRows) {
+            throw new IllegalArgumentException("Vector dimensions don't match");
+        }
+
+        double total = 0;
+        for (Map.Entry<Index, Double> entry : values.entrySet()) {
+            Index key = entry.getKey();
+            total += entry.getValue() * sparseMat.get(key.rows, 0);
+        }
+        return total;
     }
 
     /**

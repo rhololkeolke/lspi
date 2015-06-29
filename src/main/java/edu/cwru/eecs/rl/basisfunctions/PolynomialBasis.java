@@ -1,5 +1,6 @@
 package edu.cwru.eecs.rl.basisfunctions;
 
+import edu.cwru.eecs.linalg.SparseMatrix;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import Jama.Matrix;
 
@@ -25,6 +26,12 @@ public class PolynomialBasis implements BasisFunctions, Serializable {
 
         return results;
     }
+
+    @Override
+    public SparseMatrix sparseEvaluate(Matrix state, int action) {
+        return new SparseMatrix(evaluate(state, action));
+    }
+
 
     @Override
     public int size() {

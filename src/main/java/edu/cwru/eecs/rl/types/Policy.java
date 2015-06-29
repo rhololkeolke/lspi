@@ -1,8 +1,11 @@
 package edu.cwru.eecs.rl.types;
 
 import Jama.Matrix;
+import edu.cwru.eecs.linalg.SparseMatrix;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
 
 public class Policy implements Serializable {
 
@@ -76,6 +79,23 @@ public class Policy implements Serializable {
         return bestAction;
     }
 
+    public int sparseEvaluate(Matrix state) throws Exception {
+        int bestAction = 0;
+        if (Math.random() < this.explore) {
+            bestAction = (int) (Math.random() * actions);
+        } else {
+            double bestQ = Double.NEGATIVE_INFINITY;
+            for (int action = 0; action < actions; action++) {
+                double currQ = this.stateActionValueSparse(state, action);
+                if (currQ > bestQ) {
+                    bestQ = currQ;
+                    bestAction = action;
+                }
+            }
+        }
+        return bestAction;
+    }
+
     /**
      * Returns the state-action value for the given state action pair.
      *
@@ -87,6 +107,7 @@ public class Policy implements Serializable {
     public double stateActionValue(Matrix state, int action) throws Exception {
 
         Matrix phi = getPhi(state, action);
+
         if (phi.getRowDimension() != this.weights.getRowDimension()) {
             throw new Exception("Phi matrix dimension does not match policy weight dimensions");
         }
@@ -96,6 +117,16 @@ public class Policy implements Serializable {
             total += phi.get(i, 0) * this.weights.get(i, 0);
         }
         return total;
+    }
+
+    public double stateActionValueSparse(Matrix state, int action) throws Exception {
+        SparseMatrix phi = basis.sparseEvaluate(state, action);
+
+        if (phi.numRows != this.weights.getRowDimension()) {
+            throw new Exception("Phi matrix dimension does not match policy weight dimensions");
+        }
+
+        return phi.dot(this.weights);
     }
 
     /**

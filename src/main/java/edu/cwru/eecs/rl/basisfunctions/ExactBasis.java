@@ -1,5 +1,6 @@
 package edu.cwru.eecs.rl.basisfunctions;
 
+import edu.cwru.eecs.linalg.SparseMatrix;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import Jama.Matrix;
 
@@ -54,6 +55,16 @@ public class ExactBasis implements BasisFunctions, Serializable {
     @Override
     public Matrix evaluate(Matrix state, int action) {
         Matrix result = new Matrix(this.size(), 1);
+
+        int index = getStateActionIndex(state, action);
+
+        result.set(index, 0, 1);
+        return result;
+    }
+
+    @Override
+    public SparseMatrix sparseEvaluate(Matrix state, int action) {
+        SparseMatrix result = new SparseMatrix(this.size(), 1);
 
         int index = getStateActionIndex(state, action);
 
