@@ -70,7 +70,7 @@ public class Lspi implements Serializable {
             iteration++;
             System.out.println("distance: " + newPolicy.weights.minus(oldPolicy.weights).normF());
             System.out.println("normInf: " + newPolicy.weights.minus(oldPolicy.weights).normInf());
-        } while (newPolicy.weights.minus(oldPolicy.weights).normF() > epsilon && iteration <= maxIterations);
+        } while (newPolicy.weights.minus(oldPolicy.weights).normInf() > epsilon && iteration <= maxIterations);
 
         if (iteration >= maxIterations) {
             System.out.println("Lspi failed to converge within " + maxIterations);
