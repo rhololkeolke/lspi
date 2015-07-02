@@ -112,6 +112,7 @@ public class Lspi implements Serializable {
         int iteration = 0;
 
         do {
+            System.out.println("Starting iteration " + iteration);
             oldPolicy = new Policy(newPolicy);
             switch (policyImprover) {
                 case LSTDQ:
@@ -127,9 +128,11 @@ public class Lspi implements Serializable {
                     newPolicy.weights = lstdqExact(samples, oldPolicy, gamma, tolerance, maxSolverIterations);
             }
             iteration++;
+            System.out.println("epsilon: " + epsilon);
+            System.out.println("maxiteration: " + maxIterations);
             System.out.println("distance: " + newPolicy.weights.minus(oldPolicy.weights).normF());
             System.out.println("normInf: " + newPolicy.weights.minus(oldPolicy.weights).normInf());
-        } while (newPolicy.weights.minus(oldPolicy.weights).normF() > epsilon
+        } while (newPolicy.weights.minus(oldPolicy.weights).normInf() > epsilon
                  && iteration <= maxIterations);
 
         if (iteration >= maxIterations) {
