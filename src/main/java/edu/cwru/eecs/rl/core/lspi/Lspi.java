@@ -6,6 +6,9 @@ import edu.cwru.eecs.rl.types.Model;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
 import Jama.Matrix;
+import no.uib.cipr.matrix.DenseVector;
+import no.uib.cipr.matrix.Vector;
+import no.uib.cipr.matrix.sparse.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,7 +18,7 @@ import java.util.Map;
 
 public class Lspi implements Serializable {
 
-    public enum PolicyImprover {LSTDQ, LSTDQ_EXACT, LSTDQ_EXACT_WITH_WEIGHTING, LSTDQ_OPT_EXACT}
+    public enum PolicyImprover {LSTDQ, LSTDQ_EXACT, LSTDQ_EXACT_WITH_WEIGHTING, LSTDQ_OPT_EXACT, LSTDQ_EXACT_MTJ}
 
     /**
      * Learn the policy given the samples and initial policy. Uses the lstdq Policy Improver.
@@ -124,6 +127,9 @@ public class Lspi implements Serializable {
                 case LSTDQ_EXACT:
                     newPolicy.weights = lstdqExact(samples, oldPolicy, gamma, tolerance, maxSolverIterations);
                     break;
+                case LSTDQ_EXACT_MTJ:
+                    newPolicy.weights = lstdqExactMtj(samples, oldPolicy, gamma, tolerance, maxSolverIterations);
+                    break;
                 case LSTDQ:
                     // fall through
                 default:
@@ -224,6 +230,70 @@ public class Lspi implements Serializable {
         }
 
         return steepestDescent(matA, vecB, tolerance, maxSolverIterations);
+    }
+
+    public static Matrix lstdqExactMtj(List<Sample> samples,
+                                       Policy policy,
+                                       double gamma,
+                                       double tolerance,
+                                       int maxSolverIterations) {
+        ExactBasis basis = null;
+        if (policy.basis instanceof ExactBasis) {
+            basis = (ExactBasis) policy.basis;
+        } else {
+            System.err.println("LSTDQExact requires a policy with a "
+                    + "basis function of class ExactBasis.class. "
+                    + "Running normal LSTDQ instead.");
+            return lstdq(samples, policy, gamma);
+        }
+
+        int basisSize = policy.basis.size();
+        no.uib.cipr.matrix.Matrix matA = new LinkedSparseMatrix(basisSize, basisSize);
+        Vector vecB = new DenseVector(basisSize);
+
+        System.out.println("Evaluating samples");
+        for (Sample sample : samples) {
+            int bestAction = 0;
+            try {
+                bestAction = policy.sparseEvaluate(sample.nextState);
+            } catch (Exception e) {
+                System.err.println("Failed to evaluate the policy");
+                e.printStackTrace();
+            }
+
+            int currStateIndex = basis.getStateActionIndex(sample.currState, sample.action);
+            int nextStateIndex = basis.getStateActionIndex(sample.nextState, bestAction);
+
+            if (currStateIndex == nextStateIndex) {
+                matA.set(currStateIndex, currStateIndex, 1 - gamma);
+            } else {
+                matA.set(currStateIndex, currStateIndex, 1);
+                matA.set(currStateIndex, nextStateIndex, -gamma);
+            }
+
+            vecB.set(currStateIndex, vecB.get(currStateIndex) + sample.reward);
+        }
+
+        System.out.println("Solving matrix equations");
+        IterativeSolver solver = new GMRES(vecB);
+
+        Vector vecX = new DenseVector(basisSize);
+        try {
+            vecX = solver.solve(matA, vecB, vecX);
+        } catch (IterativeSolverNotConvergedException e) {
+            System.err.println("IterativeSolverNotConvergedException: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+
+        System.out.println("Copying solution back to old matrix type");
+        Matrix weightVec = Matrix.random(vecX.size(), 1);
+
+        for (int i = 0; i < vecX.size(); i++) {
+            weightVec.set(i, 0, vecX.get(i));
+        }
+
+        return weightVec;
     }
 
     /**
