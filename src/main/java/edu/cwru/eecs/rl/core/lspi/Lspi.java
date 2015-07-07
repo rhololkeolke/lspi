@@ -115,22 +115,23 @@ public class Lspi implements Serializable {
             System.out.println("Starting iteration " + iteration);
             oldPolicy = new Policy(newPolicy);
             switch (policyImprover) {
-                case LSTDQ:
-                    newPolicy.weights = lstdq(samples, oldPolicy, gamma);
-                    break;
                 case LSTDQ_EXACT_WITH_WEIGHTING:
                     newPolicy.weights = lstdqExactWithWeighting(samples, oldPolicy, gamma);
                     break;
                 case LSTDQ_OPT_EXACT:
                     newPolicy.weights = lstdqOptExact(samples, oldPolicy, gamma);
                     break;
-                default:
+                case LSTDQ_EXACT:
                     newPolicy.weights = lstdqExact(samples, oldPolicy, gamma, tolerance, maxSolverIterations);
+                    break;
+                case LSTDQ:
+                    // fall through
+                default:
+                    newPolicy.weights = lstdq(samples, oldPolicy, gamma);
             }
             iteration++;
             System.out.println("epsilon: " + epsilon);
-            System.out.println("maxiteration: " + maxIterations);
-            System.out.println("distance: " + newPolicy.weights.minus(oldPolicy.weights).normF());
+            System.out.println("normF: " + newPolicy.weights.minus(oldPolicy.weights).normF());
             System.out.println("normInf: " + newPolicy.weights.minus(oldPolicy.weights).normInf());
         } while (newPolicy.weights.minus(oldPolicy.weights).normInf() > epsilon
                  && iteration <= maxIterations);
@@ -138,7 +139,7 @@ public class Lspi implements Serializable {
         if (iteration >= maxIterations) {
             System.out.println("Lspi failed to converge within " + maxIterations);
             System.out.println("Epsilon: " + epsilon
-                               + " Distance: " + newPolicy.weights.minus(oldPolicy.weights)
+                               + " normF: " + newPolicy.weights.minus(oldPolicy.weights)
                 .normF());
         }
 
