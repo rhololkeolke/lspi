@@ -244,6 +244,8 @@ public class Lspi implements Serializable {
         Matrix matA = Matrix.identity(basisSize, basisSize).times(.01);
         Matrix vecB = new Matrix(basisSize, 1);
 
+        ExactBasis basis = (ExactBasis)policy.basis;
+
         System.out.println("Evaluating the samples");
         for (Sample sample : samples) {
             // Find the value of pi(s')
@@ -262,11 +264,137 @@ public class Lspi implements Serializable {
             // phi(s', pi(s'))
             Matrix phi3 = policy.getPhi(sample.nextState, bestAction);
 
+            int currStateIndex = basis.getStateActionIndex(sample.currState, sample.action);
+            int nextStateIndex = basis.getStateActionIndex(sample.nextState, bestAction);
+
+            for (int i=0; i<basisSize; i++) {
+                if (i == currStateIndex) {
+                    if (Math.abs(phi1.get(i, 0) - 1) > .001) {
+                        System.err.println("phi1.currStateIndex " + i + " is not 1. Got " + phi1.get(i, 0));
+                    }
+                } else {
+                    if (Math.abs(phi1.get(i, 0)) > .001) {
+                        System.err.println("phi1 " + i + " is not 0. got " + phi1.get(i, 0));
+                    }
+                }
+            }
+            for (int i=0; i<basisSize; i++) {
+                if (i == nextStateIndex) {
+                    if (Math.abs(phi3.get(i, 0) - 1) > .001) {
+                        System.err.println("phi3.currStateIndex " + i + " is not 1. Got " + phi3.get(i, 0));
+                    }
+                } else {
+                    if (Math.abs(phi3.get(i, 0)) > .001) {
+                        System.err.println("phi3 " + i + " is not 0. got " + phi3.get(i, 0));
+                    }
+                }
+            }
+
+            phi3.timesEquals(gamma);
+
+            for (int i=0; i<basisSize; i++) {
+                if (i == nextStateIndex) {
+                    if (Math.abs(phi3.get(i, 0) - gamma) > .001) {
+                        System.err.println("phi3.currStateIndex " + i + " is not gamma. Got " + phi3.get(i, 0));
+                    }
+                } else {
+                    if (Math.abs(phi3.get(i, 0)) > .001) {
+                        System.err.println("phi3 " + i + " is not 0. got " + phi3.get(i, 0));
+                    }
+                }
+            }
+
+            phi2.minusEquals(phi3);
+
+            if (currStateIndex == nextStateIndex) {
+                for (int i = 0; i < basisSize; i++) {
+                    if (i == currStateIndex) {
+                        if (Math.abs(phi2.get(i, 0) - (1 - gamma)) > .001) {
+                            System.err.println("phi2.currStateIndex " + i + " is not (1-gamma). Got " + phi2.get(i, 0));
+                        }
+                    } else {
+                        if (Math.abs(phi2.get(i, 0)) > .001) {
+                            System.err.println("phi2 " + i + " is not 0. got " + phi2.get(i, 0));
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < basisSize; i++) {
+                    if (i == currStateIndex) {
+                        if (Math.abs(phi2.get(i, 0) - 1) > .001) {
+                            System.err.println("phi2.currStateIndex " + i + " is not 1. Got " + phi2.get(i, 0));
+                        }
+                    } else if(i == nextStateIndex) {
+                        if (Math.abs(phi2.get(i, 0) + gamma) > .001) {
+                            System.err.println("phi2.nextStateIndex " + i + " is not -gamma. Got " + phi2.get(i, 0));
+                        }
+                    } else {
+                        if (Math.abs(phi2.get(i, 0)) > .001) {
+                            System.err.println("phi2 " + i + " is not 0. got " + phi2.get(i, 0));
+                        }
+                    }
+                }
+            }
+
+            //Matrix intermediateA = phi1.times(phi2.minusEquals(phi3.timesEquals(gamma)).transpose());
+            Matrix intermediateA = phi1.times(phi2.transpose());
+
+            if(currStateIndex == nextStateIndex) {
+                for (int i=0; i<basisSize; i++) {
+                    for (int j=0; j<basisSize; j++) {
+                        if (currStateIndex == i && nextStateIndex == j) {
+                            if (Math.abs(intermediateA.get(i, j) - (1 - gamma)) > .001) {
+                                System.err.println("currStateIndex == nextStateIndex: has value not equal to 1-gamma " + intermediateA.get(i, j) + " expected " + (1 - gamma));
+                            }
+                        } else {
+                            if(Math.abs(intermediateA.get(i, j)) > .001) {
+                                System.err.println("currStateIndex == nextStateIndex: " + i + " " + j + " has non-zero value " + intermediateA.get(i, j));
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (int i=0; i<basisSize; i++) {
+                    for (int j=0; j<basisSize; j++) {
+                        if (currStateIndex == i && currStateIndex == j) {
+                            if (Math.abs(intermediateA.get(i, j) -1) > .001) {
+                                System.err.println("currStateIndex != nextStateIndex: currStateIndex, currStateIndex has value not equal to 1 " + intermediateA.get(i, j));
+                            }
+                        } else if (currStateIndex == i && nextStateIndex == j) {
+                            if (Math.abs(intermediateA.get(i, j) + gamma) > .001) {
+                                System.err.println("currStateIndex != nextStateIndex: currStateIndex, nextStateIndex has value not equal to -gamma " + intermediateA.get(i, j) + " expected " + (1 - gamma));
+                            }
+                        } else {
+                            if (Math.abs(intermediateA.get(i, j)) > .001) {
+                                System.err.println("currStateIndex != nextStateIndex: " + i + " " + j + " has non-zero value " + intermediateA.get(i, j));
+                            }
+                        }
+                    }
+                }
+            }
+
             // update matA
-            matA.plusEquals(phi1.times(phi2.minusEquals(phi3.timesEquals(gamma)).transpose()));
+            //matA.plusEquals(phi1.times(phi2.minusEquals(phi3.timesEquals(gamma)).transpose()));
+            matA.plusEquals(intermediateA);
 
             // update vecB
-            vecB.plusEquals(phi1.timesEquals(sample.reward));
+            //vecB.plusEquals(phi1.timesEquals(sample.reward));
+
+            Matrix intermediateB = phi1.timesEquals(sample.reward);
+
+            for (int i=0; i<basisSize; i++) {
+                if (i == currStateIndex) {
+                    if (Math.abs(intermediateB.get(i, 0) - sample.reward) > .001) {
+                        System.err.println("intermediateB " + i + " is not equal to " + sample.reward + " got " + intermediateB.get(i, 0));
+                    }
+                } else {
+                    if (Math.abs(intermediateB.get(i, 0)) > .001) {
+                        System.err.println("intermediateB " + i + " is not equal to 0. Got " + intermediateB.get(i, 0));
+                    }
+                }
+            }
+
+            vecB.plusEquals(intermediateB);
         }
 
         System.out.println("Converting to MTJ matrices");
@@ -323,13 +451,24 @@ public class Lspi implements Serializable {
 
         int basisSize = policy.basis.size();
         no.uib.cipr.matrix.Matrix matA = new LinkedSparseMatrix(basisSize, basisSize);
+        Matrix myMatA = Matrix.identity(basisSize, basisSize).times(.01);
+        System.out.println("Preconditioning matrix");
+        for (int i=0; i<basisSize; i++) {
+            matA.set(i, i, .01);
+        }
+
         Vector vecB = new DenseVector(basisSize);
+        Matrix myVecB = new Matrix(basisSize, 1);
 
         System.out.println("Evaluating samples");
         for (Sample sample : samples) {
             int bestAction = 0;
             try {
                 bestAction = policy.sparseEvaluate(sample.nextState);
+                int nonSparseBestAction = policy.evaluate(sample.nextState);
+                if (bestAction != nonSparseBestAction) {
+                    System.err.println("bestAction " + bestAction + " does not equal nonSparseBestAction " + nonSparseBestAction);
+                }
             } catch (Exception e) {
                 System.err.println("Failed to evaluate the policy");
                 e.printStackTrace();
@@ -339,13 +478,35 @@ public class Lspi implements Serializable {
             int nextStateIndex = basis.getStateActionIndex(sample.nextState, bestAction);
 
             if (currStateIndex == nextStateIndex) {
-                matA.set(currStateIndex, currStateIndex, 1 - gamma);
+                matA.set(currStateIndex, currStateIndex, matA.get(currStateIndex, currStateIndex) + 1 - gamma);
+
+                myMatA.set(currStateIndex, currStateIndex, myMatA.get(currStateIndex, currStateIndex) + 1 - gamma);
             } else {
-                matA.set(currStateIndex, currStateIndex, 1);
-                matA.set(currStateIndex, nextStateIndex, -gamma);
+                matA.set(currStateIndex, currStateIndex, matA.get(currStateIndex, currStateIndex) + 1);
+                matA.set(currStateIndex, nextStateIndex, matA.get(currStateIndex, nextStateIndex) - gamma);
+
+                myMatA.set(currStateIndex, currStateIndex, myMatA.get(currStateIndex, currStateIndex) + 1);
+                myMatA.set(currStateIndex, nextStateIndex, myMatA.get(currStateIndex, nextStateIndex) - gamma);
             }
 
             vecB.set(currStateIndex, vecB.get(currStateIndex) + sample.reward);
+
+            myVecB.set(currStateIndex, 0, myVecB.get(currStateIndex, 0) + sample.reward);
+        }
+
+        // compare matrices
+        for (int i =0; i<basisSize; i++) {
+            for (int j=0; j<basisSize; j++) {
+                if (Math.abs(matA.get(i, j) - myMatA.get(i, j)) > .001) {
+                    throw new RuntimeException("matA(" + i + ", " + j + "): " + matA.get(i, j) + " != " + myMatA.get(i, j) + " :myMatA(" + i + ", " + j +")");
+                }
+            }
+        }
+
+        for (int i =0; i<basisSize; i++) {
+            if(Math.abs(vecB.get(i) - myVecB.get(i, 0)) > .001) {
+                throw new RuntimeException("vecB(" + i + "): " + vecB.get(i) + " != " + myVecB.get(i, 0) + " :myVecB(" + i + ")");
+            }
         }
 
         System.out.println("Solving matrix equations");
@@ -361,9 +522,9 @@ public class Lspi implements Serializable {
         }
 
         System.out.println("Copying solution back to old matrix type");
-        Matrix weightVec = Matrix.random(vecX.size(), 1);
+        Matrix weightVec = new Matrix(vecX.size(), 1);
 
-        for (int i = 0; i < vecX.size(); i++) {
+        for (int i = 0; i < basisSize; i++) {
             weightVec.set(i, 0, vecX.get(i));
         }
 
