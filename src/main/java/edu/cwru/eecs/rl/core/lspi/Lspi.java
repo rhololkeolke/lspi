@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class Lspi implements Serializable {
 
-    public enum PolicyImprover {LSTDQ, LSTDQ_EXACT, LSTDQ_EXACT_WITH_WEIGHTING, LSTDQ_OPT_EXACT, LSTDQ_EXACT_MTJ}
+    public enum PolicyImprover {LSTDQ, LSTDQ_MTJ, LSTDQ_EXACT, LSTDQ_EXACT_WITH_WEIGHTING, LSTDQ_OPT_EXACT, LSTDQ_EXACT_MTJ}
 
     /**
      * Learn the policy given the samples and initial policy. Uses the lstdq Policy Improver.
@@ -130,6 +130,9 @@ public class Lspi implements Serializable {
                 case LSTDQ_EXACT_MTJ:
                     newPolicy.weights = lstdqExactMtj(samples, oldPolicy, gamma, tolerance, maxSolverIterations);
                     break;
+                case LSTDQ_MTJ:
+                    newPolicy.weights = lstdqMtj(samples, oldPolicy, gamma, tolerance, maxSolverIterations);
+                    break;
                 case LSTDQ:
                     // fall through
                 default:
@@ -230,6 +233,77 @@ public class Lspi implements Serializable {
         }
 
         return steepestDescent(matA, vecB, tolerance, maxSolverIterations);
+    }
+
+    public static Matrix lstdqMtj(List<Sample> samples,
+                                  Policy policy,
+                                  double gamma,
+                                  double tolerance,
+                                  int maxSolverIterations) {
+        int basisSize = policy.basis.size();
+        Matrix matA = Matrix.identity(basisSize, basisSize).times(.01);
+        Matrix vecB = new Matrix(basisSize, 1);
+
+        System.out.println("Evaluating the samples");
+        for (Sample sample : samples) {
+            // Find the value of pi(s')
+            int bestAction = 0;
+            try {
+                bestAction = policy.evaluate(sample.nextState);
+            } catch (Exception e) {
+                System.err.println("Failed to evaluate the policy");
+                e.printStackTrace();
+            }
+
+            // phi(s,a)
+            Matrix phi1 = policy.getPhi(sample.currState, sample.action);
+            // phi(s,a)
+            Matrix phi2 = phi1.copy();
+            // phi(s', pi(s'))
+            Matrix phi3 = policy.getPhi(sample.nextState, bestAction);
+
+            // update matA
+            matA.plusEquals(phi1.times(phi2.minusEquals(phi3.timesEquals(gamma)).transpose()));
+
+            // update vecB
+            vecB.plusEquals(phi1.timesEquals(sample.reward));
+        }
+
+        System.out.println("Converting to MTJ matrices");
+        no.uib.cipr.matrix.Matrix sparseMatA = new LinkedSparseMatrix(basisSize, basisSize);
+        for (int i = 0; i < basisSize; i++) {
+            for (int j = 0; j < basisSize; j++) {
+                if (matA.get(i, j) != 0) {
+                    sparseMatA.set(i, j, matA.get(i, j));
+                }
+            }
+        }
+
+        Vector denseVecB = new DenseVector(basisSize);
+        for (int i = 0; i < basisSize; i++) {
+            denseVecB.set(i, vecB.get(i, 0));
+        }
+
+        System.out.println("Solving matrix equations");
+        IterativeSolver solver = new GMRES(denseVecB);
+
+        Vector vecX = new DenseVector(basisSize);
+        try {
+            vecX = solver.solve(sparseMatA, denseVecB, vecX);
+        } catch (IterativeSolverNotConvergedException e) {
+            System.err.println("IterativeSolverNotConvergedException: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+
+        System.out.println("Copying solution back to old matrix type");
+        Matrix weightVec = Matrix.random(vecX.size(), 1);
+
+        for (int i = 0; i < vecX.size(); i++) {
+            weightVec.set(i, 0, vecX.get(i));
+        }
+
+        return weightVec;
     }
 
     public static Matrix lstdqExactMtj(List<Sample> samples,
