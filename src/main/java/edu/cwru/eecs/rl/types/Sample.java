@@ -8,11 +8,14 @@ public class Sample implements Serializable {
 
     private static final long serialVersionUID = -3257281634992483010L;
 
+    public enum Type {NORMAL, NEGATIVE, ABSTRACT};
+
     public Matrix currState;
     public int action;
     public double reward;
     public Matrix nextState;
     public boolean absorb;
+    public Type type = Type.NORMAL;
 
     /**
      * Constructs a sample class. Absorb is set to false.
@@ -29,6 +32,7 @@ public class Sample implements Serializable {
         this.nextState = nextState.copy();
         this.reward = reward;
         this.absorb = false;
+        this.type = Type.NORMAL;
     }
 
     /**
@@ -46,6 +50,17 @@ public class Sample implements Serializable {
         this.nextState = new Matrix(nextState, nextState.length);
         this.reward = reward;
         this.absorb = false;
+        this.type = Type.NORMAL;
+    }
+
+    public Sample(double[] currState, int action,
+                  double[] nextState, double reward, Type type) {
+        this.currState = new Matrix(currState, currState.length);
+        this.action = action;
+        this.nextState = new Matrix(nextState, nextState.length);
+        this.reward = reward;
+        this.absorb = false;
+        this.type = type;
     }
 
     /**
@@ -64,6 +79,7 @@ public class Sample implements Serializable {
         this.nextState = nextState.copy();
         this.reward = reward;
         this.absorb = absorb;
+        this.type = Type.NORMAL;
     }
 
     /**
@@ -82,6 +98,7 @@ public class Sample implements Serializable {
         this.nextState = new Matrix(nextState, nextState.length);
         this.reward = reward;
         this.absorb = false;
+        this.type = Type.NORMAL;
     }
 
     @Override
@@ -112,6 +129,7 @@ public class Sample implements Serializable {
             equal = equal && (this.nextState.get(i, 0) == input.nextState.get(i, 0));
         }
         equal = equal && (this.reward == input.reward);
+        equal = equal && (this.type == input.type);
 
         return equal;
     }
