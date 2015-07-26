@@ -354,14 +354,23 @@ public class Lspi implements Serializable {
 
         System.out.println("Solving matrix equations");
         IterativeSolver solver = new GMRES(vecB);
+        int maxGmresIterations = 1000000;
+        solver.setIterationMonitor(new DefaultIterationMonitor(maxGmresIterations, 1e-5, 1e-50, 1e+5));
 
         Vector vecX = new DenseVector(basisSize);
-        try {
-            vecX = solver.solve(matA, vecB, vecX);
-        } catch (IterativeSolverNotConvergedException e) {
-            System.err.println("IterativeSolverNotConvergedException: " + e.getMessage());
-            e.printStackTrace();
-            return null;
+
+        while (maxGmresIterations <= 1000000000) {
+            try {
+                vecX = solver.solve(matA, vecB, vecX);
+                break;
+            } catch (IterativeSolverNotConvergedException e) {
+                System.err.println("IterativeSolverNotConvergedException: " + e.getMessage());
+                System.err.println("Ran for " + solver.getIterationMonitor().iterations() + " iterations");
+                e.printStackTrace();
+            }
+            maxGmresIterations *= 10;
+            solver.setIterationMonitor(new DefaultIterationMonitor(maxGmresIterations, 1e-5, 1e-50, 1e+5));
+            System.out.println("Trying again with " + maxGmresIterations + " iterations");
         }
 
         System.out.println("Copying solution back to old matrix type");
