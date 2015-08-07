@@ -1,4 +1,4 @@
-package edu.cwru.eecs.rl.edu.cwru.eecs.rl.core.lspi;
+package edu.cwru.eecs.rl.core.lspi;
 
 import edu.cwru.eecs.rl.agent.PolicySampler;
 import edu.cwru.eecs.rl.basisfunctions.ExactBasis;
@@ -51,7 +51,7 @@ public class LspiTests {
                                              Matrix.random(exactBasis.size(), 1));
 
         Matrix lstdqWeights = Lspi.lstdq(samples, exactBasisPolicy, .9);
-        Matrix lstdqExactWeights = Lspi.lstdqExact(samples, exactBasisPolicy, .9, .001, 1000);
+        Matrix lstdqExactWeights = Lspi.lstdqExactMtj(samples, exactBasisPolicy, .9);
 
         Assert.assertEquals(lstdqExactWeights.getRowDimension(), lstdqWeights.getRowDimension());
         Assert.assertEquals(1, lstdqExactWeights.getColumnDimension());
@@ -62,28 +62,4 @@ public class LspiTests {
             Assert.assertEquals(lstdqExactWeights.get(i, 0), lstdqWeights.get(i, 0), .1);
         }
     }
-
-    /*@Test
-    public void testLstdqExactMtjVsLstdq() {
-        BasisFunctions
-                exactBasis =
-                new ExactBasis(new int[]{simulator.numStates()}, simulator.numActions());
-        Policy exactBasisPolicy = new Policy(0,
-                simulator.numActions(),
-                exactBasis,
-                Matrix.random(exactBasis.size(), 1));
-
-        Matrix lstdqWeights = Lspi.lstdq(samples, exactBasisPolicy, .9);
-        Matrix lstdqExactMtjWeights = Lspi.lstdqExactMtj(samples, exactBasisPolicy, .9, .001, 1000);
-
-        Assert.assertEquals(lstdqExactMtjWeights.getRowDimension(), lstdqWeights.getRowDimension());
-        Assert.assertEquals(1, lstdqExactMtjWeights.getColumnDimension());
-        Assert.assertEquals(1, lstdqWeights.getColumnDimension());
-
-        // verify that the two matrices are approximately equal
-        for (int i = 0; i < lstdqExactMtjWeights.getRowDimension(); i++) {
-            Assert.assertEquals(lstdqExactMtjWeights.get(i, 0), lstdqWeights.get(i, 0), .1);
-        }
-    }*/
-
 }

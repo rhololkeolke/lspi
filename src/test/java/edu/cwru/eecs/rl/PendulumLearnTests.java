@@ -48,7 +48,7 @@ public class PendulumLearnTests {
                                           rbfBasis,
                                           Matrix.random(rbfBasis.size(), 1));
 
-        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10);
+        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_MTJ);
 
         simulator.reset();
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);

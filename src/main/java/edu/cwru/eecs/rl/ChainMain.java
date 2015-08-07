@@ -42,7 +42,7 @@ public class ChainMain {
         List<Sample> samples = PolicySampler.sample(simulator, 10, 500, randomPolicy);
 
         System.out.println("Running Lspi");
-        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10);
+        learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_MTJ);
 
         System.out.println("Evaluating random and learned policy");
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);

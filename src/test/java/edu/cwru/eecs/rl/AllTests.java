@@ -8,7 +8,7 @@ import edu.cwru.eecs.rl.domains.DeterministicChainTests;
 import edu.cwru.eecs.rl.domains.DeterministicPendulumTests;
 import edu.cwru.eecs.rl.domains.ProbabilisticChainTests;
 import edu.cwru.eecs.rl.domains.ProbabilisticPendulumTests;
-import edu.cwru.eecs.rl.edu.cwru.eecs.rl.core.lspi.LspiTests;
+import edu.cwru.eecs.rl.core.lspi.LspiTests;
 import edu.cwru.eecs.rl.types.RandomPolicyTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
