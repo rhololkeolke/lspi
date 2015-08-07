@@ -1,5 +1,7 @@
 package edu.cwru.eecs.rl;
 
+import java.util.List;
+
 import edu.cwru.eecs.rl.agent.PolicySampler;
 import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
 import edu.cwru.eecs.rl.basisfunctions.PolynomialBasis;
@@ -9,9 +11,7 @@ import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
-
-import java.util.List;
+import no.uib.cipr.matrix.Matrices;
 
 public class ChainMain {
 
@@ -30,13 +30,13 @@ public class ChainMain {
         BasisFunctions fakeBasis = new FakeBasis();
         BasisFunctions polyBasis = new PolynomialBasis(3, simulator.numActions());
         Policy randomPolicy = new Policy(1,
-                                         simulator.numActions(),
-                                         fakeBasis,
-                                         Matrix.random(fakeBasis.size(), 1));
+                simulator.numActions(),
+                fakeBasis,
+                Matrices.random(fakeBasis.size()));
         Policy learnedPolicy = new Policy(0,
-                                          simulator.numActions(),
-                                          polyBasis,
-                                          Matrix.random(polyBasis.size(), 1));
+                simulator.numActions(),
+                polyBasis,
+                Matrices.random(polyBasis.size()));
 
         System.out.println("Sampling 10 episodes with 500 steps using random policy");
         List<Sample> samples = PolicySampler.sample(simulator, 10, 500, randomPolicy);

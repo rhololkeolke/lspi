@@ -2,7 +2,8 @@ package edu.cwru.eecs.rl.basisfunctions;
 
 import edu.cwru.eecs.linalg.SparseMatrix;
 import edu.cwru.eecs.rl.types.BasisFunctions;
-import Jama.Matrix;
+import no.uib.cipr.matrix.DenseVector;
+import no.uib.cipr.matrix.Vector;
 
 import java.io.Serializable;
 
@@ -17,18 +18,18 @@ public class PolynomialBasis implements BasisFunctions, Serializable {
     }
 
     @Override
-    public Matrix evaluate(Matrix state, int action) {
-        Matrix results = new Matrix(numActions * polynomialDegree, 1);
+    public Vector evaluate(Vector state, int action) {
+        Vector results = new DenseVector(numActions * polynomialDegree);
 
         for (int i = 0; i < polynomialDegree; i++) {
-            results.set(action * polynomialDegree + i, 0, Math.pow(state.get(0, 0), i));
+            results.set(action * polynomialDegree + i, Math.pow(state.get(0), i));
         }
 
         return results;
     }
 
     @Override
-    public SparseMatrix sparseEvaluate(Matrix state, int action) {
+    public SparseMatrix sparseEvaluate(Vector state, int action) {
         return new SparseMatrix(evaluate(state, action));
     }
 

@@ -1,10 +1,12 @@
 package edu.cwru.eecs.rl.types;
 
-import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
-import Jama.Matrix;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
+import no.uib.cipr.matrix.DenseVector;
+import no.uib.cipr.matrix.Vector;
 
 @SuppressWarnings("deprecation")
 public class RandomPolicyTest {
@@ -19,14 +21,14 @@ public class RandomPolicyTest {
 
         FakeBasis basis = new FakeBasis();
 
-        randomPolicy = new Policy(1, 2, basis, new Matrix(new double[]{2}, 1));
+        randomPolicy = new Policy(1, 2, basis, new DenseVector(new double[]{2}));
     }
 
     @Test
     public void testEvaluate() {
         double firstAction = 0;
         try {
-            firstAction = randomPolicy.evaluate(new Matrix(new double[]{1}, 1));
+            firstAction = randomPolicy.evaluate(new DenseVector(new double[]{1}));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -36,7 +38,7 @@ public class RandomPolicyTest {
         for (int i = 0; i < 100; i++) {
             double action = 0;
             try {
-                action = randomPolicy.evaluate(new Matrix(new double[]{1}, 1));
+                action = randomPolicy.evaluate(new DenseVector(new double[]{1}));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -51,7 +53,7 @@ public class RandomPolicyTest {
     public void testQValue() {
         double qValue = 0;
         try {
-            qValue = randomPolicy.stateActionValue(new Matrix(new double[]{1}, 1), 0);
+            qValue = randomPolicy.stateActionValue(new DenseVector(new double[]{1}), 0);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,9 +62,9 @@ public class RandomPolicyTest {
 
     @Test
     public void testgetPhi() {
-        Matrix phi = randomPolicy.getPhi(new Matrix(new double[]{1}, 1), 0);
-        Assert.assertEquals(1.0, phi.get(0, 0), .001);
-        Assert.assertEquals(1, phi.getColumnDimension() * phi.getRowDimension(), .001);
+        Vector phi = randomPolicy.getPhi(new DenseVector(new double[]{1}), 0);
+        Assert.assertEquals(1.0, phi.get(0), .001);
+        Assert.assertEquals(1, phi.size());
     }
 
 }

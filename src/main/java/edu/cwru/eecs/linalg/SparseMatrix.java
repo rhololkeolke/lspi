@@ -1,9 +1,11 @@
 package edu.cwru.eecs.linalg;
 
-import Jama.Matrix;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import no.uib.cipr.matrix.DenseMatrix;
+import no.uib.cipr.matrix.Matrix;
+import no.uib.cipr.matrix.Vector;
 
 // Todo: refactor this class as an interface to allow switching sparse types
 public class SparseMatrix {
@@ -106,16 +108,31 @@ public class SparseMatrix {
      * @param matrix Dense matrix to convert
      */
     public SparseMatrix(Matrix matrix) {
-        values = new HashMap<>(matrix.getRowDimension() * matrix.getColumnDimension());
+        values = new HashMap<>(matrix.numRows() * matrix.numColumns());
 
-        for (int i = 0; i < matrix.getRowDimension(); i++) {
-            for (int j = 0; j < matrix.getColumnDimension(); j++) {
+        for (int i = 0; i < matrix.numRows(); i++) {
+            for (int j = 0; j < matrix.numColumns(); j++) {
                 values.put(new Index(i, j), matrix.get(i, j));
             }
         }
 
-        this.numRows = matrix.getRowDimension();
-        this.numCols = matrix.getColumnDimension();
+        this.numRows = matrix.numRows();
+        this.numCols = matrix.numColumns();
+    }
+
+    /**
+     * Converts a vector into a sparse matrix
+     * @return vector Vector to convert
+     */
+    public SparseMatrix(Vector vector) {
+        values = new HashMap<>(vector.size(), 1);
+
+        for (int i = 0; i < vector.size(); i++) {
+            values.put(new Index(i, 0), vector.get(i));
+        }
+
+        this.numRows = vector.size();
+        this.numCols = 1;
     }
 
     public int size() {
@@ -174,17 +191,17 @@ public class SparseMatrix {
      * @return The resulting dense vector
      */
     public Matrix times(Matrix denseMat) {
-        if (denseMat.getColumnDimension() > 1) {
+        if (denseMat.numColumns() > 1) {
             throw new IllegalArgumentException("Can only multiply by a dense vector");
         }
 
-        if (denseMat.getRowDimension() != numCols) {
+        if (denseMat.numRows() != numCols) {
             throw new IllegalArgumentException("Matrix and vector dimensions don't match."
                                                + " (" + numRows + "," + numCols + ") times "
-                                               + denseMat.getRowDimension() + " vector.");
+                                               + denseMat.numRows() + " vector.");
         }
 
-        Matrix resultMat = new Matrix(denseMat.getRowDimension(), 1);
+        Matrix resultMat = new DenseMatrix(denseMat.numRows(), 1);
 
         for (Map.Entry<Index, Double> entry : values.entrySet()) {
             Index key = entry.getKey();
@@ -210,11 +227,11 @@ public class SparseMatrix {
     }
 
     public double dot(Matrix denseMat) {
-        if (denseMat.getColumnDimension() > 1) {
+        if (denseMat.numColumns() > 1) {
             throw new IllegalArgumentException("Can only multiply by a vector");
         }
 
-        if (denseMat.getRowDimension() != numRows) {
+        if (denseMat.numRows() != numRows) {
             throw new IllegalArgumentException("Vector dimensions don't match.");
         }
 
@@ -222,6 +239,19 @@ public class SparseMatrix {
         for (Map.Entry<Index, Double> entry : values.entrySet()) {
             Index key = entry.getKey();
             total += entry.getValue() * denseMat.get(key.rows, 0);
+        }
+        return total;
+    }
+
+    public double dot(Vector denseVec) {
+        if (denseVec.size() != numRows) {
+            throw new IllegalArgumentException("Vector dimensions don't match.");
+        }
+
+        double total = 0;
+        for (Map.Entry<Index, Double> entry : values.entrySet()) {
+            Index key = entry.getKey();
+            total += entry.getValue() * denseVec.get(key.rows);
         }
         return total;
     }

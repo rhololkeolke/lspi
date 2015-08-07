@@ -2,7 +2,8 @@ package edu.cwru.eecs.rl.basisfunctions;
 
 import edu.cwru.eecs.linalg.SparseMatrix;
 import edu.cwru.eecs.rl.types.BasisFunctions;
-import Jama.Matrix;
+import no.uib.cipr.matrix.Vector;
+import no.uib.cipr.matrix.sparse.SparseVector;
 
 import java.io.Serializable;
 
@@ -42,28 +43,28 @@ public class ExactBasis implements BasisFunctions, Serializable {
      * @param action Action being performed
      * @return Index in sparse vector equal to 1
      */
-    public int getStateActionIndex(Matrix state, int action) {
+    public int getStateActionIndex(Vector state, int action) {
         int base = action * (this.size() / numActions);
 
         int offset = 0;
-        for (int i = 0; i < state.getRowDimension(); i++) {
-            offset += offsets[i] * state.get(i, 0);
+        for (int i = 0; i < state.size(); i++) {
+            offset += offsets[i] * state.get(i);
         }
         return base + offset;
     }
 
     @Override
-    public Matrix evaluate(Matrix state, int action) {
-        Matrix result = new Matrix(this.size(), 1);
+    public Vector evaluate(Vector state, int action) {
+        Vector result = new SparseVector(this.size());
 
         int index = getStateActionIndex(state, action);
 
-        result.set(index, 0, 1);
+        result.set(index, 1);
         return result;
     }
 
     @Override
-    public SparseMatrix sparseEvaluate(Matrix state, int action) {
+    public SparseMatrix sparseEvaluate(Vector state, int action) {
         SparseMatrix result = new SparseMatrix(this.size(), 1);
 
         int index = getStateActionIndex(state, action);

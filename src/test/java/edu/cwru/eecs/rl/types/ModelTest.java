@@ -1,13 +1,16 @@
 package edu.cwru.eecs.rl.types;
 
-import Jama.Matrix;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import no.uib.cipr.matrix.DenseVector;
+import no.uib.cipr.matrix.Vector;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Devin on 5/17/15.
@@ -16,8 +19,8 @@ public class ModelTest {
 
     Model model;
     Sample[] samples = new Sample[8];
-    Matrix state0 = new Matrix(new double[]{0}, 1);
-    Matrix state1 = new Matrix(new double[]{1}, 1);
+    Vector state0 = new DenseVector(new double[]{0});
+    Vector state1 = new DenseVector(new double[]{1});
 
     @Before
     public void setUp() {
@@ -60,25 +63,25 @@ public class ModelTest {
 
     @Test
     public void testGetTransitionProbabilities() throws Exception {
-        Map<Model.MatrixWrapper, Double> transitionProbs = model.getTransitionProbabilities(state0, 0);
+        Map<Model.VectorWrapper, Double> transitionProbs = model.getTransitionProbabilities(state0, 0);
         assertEquals(2, transitionProbs.size());
-        assertEquals(.33, transitionProbs.get(new Model.MatrixWrapper(state0)), .01);
-        assertEquals(.67, transitionProbs.get(new Model.MatrixWrapper(state1)), .01);
+        assertEquals(.33, transitionProbs.get(new Model.VectorWrapper(state0)), .01);
+        assertEquals(.67, transitionProbs.get(new Model.VectorWrapper(state1)), .01);
 
         transitionProbs = model.getTransitionProbabilities(state0, 1);
         assertEquals(2, transitionProbs.size());
-        assertEquals(.93, transitionProbs.get(new Model.MatrixWrapper(state0)), .01);
-        assertEquals(.07, transitionProbs.get(new Model.MatrixWrapper(state1)), .01);
+        assertEquals(.93, transitionProbs.get(new Model.VectorWrapper(state0)), .01);
+        assertEquals(.07, transitionProbs.get(new Model.VectorWrapper(state1)), .01);
 
         transitionProbs = model.getTransitionProbabilities(state1, 0);
         assertEquals(2, transitionProbs.size());
-        assertEquals(.6, transitionProbs.get(new Model.MatrixWrapper(state0)), .01);
-        assertEquals(.4, transitionProbs.get(new Model.MatrixWrapper(state1)), .01);
+        assertEquals(.6, transitionProbs.get(new Model.VectorWrapper(state0)), .01);
+        assertEquals(.4, transitionProbs.get(new Model.VectorWrapper(state1)), .01);
 
         transitionProbs = model.getTransitionProbabilities(state1, 1);
         assertEquals(2, transitionProbs.size());
-        assertEquals(.29, transitionProbs.get(new Model.MatrixWrapper(state0)), .01);
-        assertEquals(.71, transitionProbs.get(new Model.MatrixWrapper(state1)), .01);
+        assertEquals(.29, transitionProbs.get(new Model.VectorWrapper(state0)), .01);
+        assertEquals(.71, transitionProbs.get(new Model.VectorWrapper(state1)), .01);
     }
 
     @Test

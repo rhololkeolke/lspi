@@ -1,14 +1,15 @@
 package edu.cwru.eecs.rl.domains;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import edu.cwru.eecs.rl.types.Sample;
+import no.uib.cipr.matrix.DenseVector;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
-import org.junit.Before;
-import org.junit.Test;
 
 public class DeterministicPendulumTests {
 
@@ -21,20 +22,20 @@ public class DeterministicPendulumTests {
     public void setup() {
         simulator = new Pendulum(20);
         double[] stateArray = {0.1571, 0.1397};
-        simulator.setState(new Matrix(stateArray, stateArray.length));
+        simulator.setState(new DenseVector(stateArray));
     }
 
     @Test
     public void testStepFunction() {
         Sample sample = simulator.step(1);
 
-        assertEquals(.1571, sample.currState.get(0, 0), .0001);
-        assertEquals(.1397, sample.currState.get(1, 0), .0001);
+        assertEquals(.1571, sample.currState.get(0), .0001);
+        assertEquals(.1397, sample.currState.get(1), .0001);
 
         assertEquals(1, sample.action);
-        double roundedVal = (double) Math.round(sample.nextState.get(0, 0) * 10000) / 10000;
+        double roundedVal = (double) Math.round(sample.nextState.get(0) * 10000) / 10000;
         assertEquals(0.1813, roundedVal, .0001);
-        roundedVal = (double) Math.round(sample.nextState.get(1, 0) * 10000) / 10000;
+        roundedVal = (double) Math.round(sample.nextState.get(1) * 10000) / 10000;
         assertEquals(0.3502, roundedVal, .0001);
         assertEquals(0, (int) sample.reward);
     }

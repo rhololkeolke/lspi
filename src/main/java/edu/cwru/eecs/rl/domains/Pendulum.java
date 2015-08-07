@@ -1,7 +1,11 @@
 package edu.cwru.eecs.rl.domains;
 
 import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
+import no.uib.cipr.matrix.DenseMatrix;
+import no.uib.cipr.matrix.DenseVector;
+import no.uib.cipr.matrix.Matrices;
+import no.uib.cipr.matrix.Matrix;
+import no.uib.cipr.matrix.Vector;
 
 import java.util.Random;
 
@@ -11,7 +15,7 @@ public class Pendulum implements Simulator {
     private double tol;
     private double noise;
     private Random rng;
-    private Matrix currState;
+    private Vector currState;
 
     private static final double[] actions = {-50.0, 0.0, 50.0};
 
@@ -48,14 +52,16 @@ public class Pendulum implements Simulator {
              29440.0 / 4104.0, -845.0 / 4104.0, 0, 0},
             {-6080.0 / 20520.0, 41040.0 / 20520.0,
              -28352.0 / 20520.0, 9295.0 / 20520.0, -5643.0 / 20520.0, 0}};
-        beta = new Matrix(betaArray).transpose();
+        beta = new DenseMatrix(6, 5);
+        new DenseMatrix(betaArray).transpose(beta);
 
         double[][] gammaArray = {{902880.0 / 7618050.0, 0, 3953664.0 / 7618050.0,
                                   3855735.0 / 7618050.0, -1371249.0 / 7618050.0,
                                   277020.0 / 7618050.0},
                                  {-2090.0 / 752400.0, 0, 22528.0 / 752400.0,
                                   21970.0 / 752400.0, -15048.0 / 752400.0, -27360.0 / 752400.0}};
-        gamma = new Matrix(gammaArray).transpose();
+        gamma = new DenseMatrix(6, 2);
+        new DenseMatrix(gammaArray).transpose(gamma);
 
         pow = 1.0 / 5.0;
     }
@@ -64,11 +70,11 @@ public class Pendulum implements Simulator {
     public void reset() {
         // pendulum starts at angle 0 (vertical)
         // and angular velocity 0 with some perturbation
-        currState = new Matrix(2, 1);
+        currState = new DenseVector(2);
 
         // generate noise for angle
-        currState.set(0, 0, (2 * rng.nextDouble() - 1) * .2);
-        currState.set(1, 0, (2 * rng.nextDouble() - 1) * .2);
+        currState.set(0, (2 * rng.nextDouble() - 1) * .2);
+        currState.set(1, (2 * rng.nextDouble() - 1) * .2);
     }
 
     @Override
@@ -77,17 +83,21 @@ public class Pendulum implements Simulator {
 
         // the following is a translation of the pendulum_ode45 method
         // that comes with the Lspi example code
-        Matrix y0 = new Matrix(3, 1);
-        y0.set(0, 0, currState.get(0, 0));
-        y0.set(1, 0, currState.get(1, 0));
-        y0.set(2, 0, controlInput);
+        DenseVector y0 = new DenseVector(3);
+        y0.set(0, currState.get(0));
+        y0.set(1, currState.get(1));
+        y0.set(2, controlInput);
 
         double hmax = dt;
         double hmin = dt / 1000.0;
         double timeStep = dt;
-        Matrix vecY = y0.copy();
-        Matrix matF = vecY.times(new Matrix(1, 6));
-        Matrix yout = vecY.copy();
+        Vector vecY = y0.copy();
+        Matrix matF = new DenseMatrix(3, 6);
+
+        Matrix matY = new DenseMatrix(vecY);
+        matY.mult(new DenseMatrix(1, 6), matF);
+
+        Vector yout = vecY.copy();
         double tau;
 
         double time = 0;
@@ -97,32 +107,46 @@ public class Pendulum implements Simulator {
                 timeStep = tfinal - time;
             }
 
-            matF.setMatrix(new int[]{0, 1, 2}, new int[]{0}, pendulumSim(vecY, 2.0, 8.0, .5, 9.8));
+
+            Vector xDot = pendulumSim(vecY, 2.0, 8.0, .5, 9.8);
+            matF.set(0, 0, xDot.get(0));
+            matF.set(1, 0, xDot.get(1));
+            matF.set(2, 0, xDot.get(2));
             for (int j = 0; j < 5; j++) {
-                Matrix betaColumn = new Matrix(beta.getRowDimension(), 1);
-                for (int i = 0; i < betaColumn.getRowDimension(); i++) {
-                    betaColumn.set(i, 0, beta.get(i, j));
-                }
+                Vector betaColumn = Matrices.getColumn(beta, j);
+                Matrix betaColumnMat = new DenseMatrix(betaColumn);
 
-                matF.setMatrix(new int[]{0, 1, 2}, new int[]{j + 1},
-                               pendulumSim(vecY.plus(matF.times(timeStep).times(betaColumn)),
-                                           2.0, 8.0, .5, 9.8));
+                Matrix newMatF = new DenseMatrix(matF.numRows(), 1);
+                matF.mult(timeStep, betaColumnMat, newMatF);
+                Vector newVecY = vecY.copy();
+                newVecY.add(Matrices.getColumn(newMatF, 0));
+                xDot = pendulumSim(newVecY, 2.0, 8.0, .5, 9.8);
+
+                matF.set(0, j+1, xDot.get(0));
+                matF.set(1, j+1, xDot.get(1));
+                matF.set(2, j+1, xDot.get(2));
             }
 
-            Matrix gammaColumn = new Matrix(gamma.getRowDimension(), 1);
-            for (int i = 0; i < gammaColumn.getRowDimension(); i++) {
-                gammaColumn.set(i, 0, gamma.get(i, 1));
-            }
-            double delta = matF.times(timeStep).times(gammaColumn).normInf();
-            tau = tol * Math.max(vecY.normInf(), 1.0);
+            Vector gammaColumn = Matrices.getColumn(gamma, 1);
+            Matrix gammaColumnMat = new DenseMatrix(gammaColumn);
+
+            Matrix newMatF = new DenseMatrix(3,1);
+            matF.mult(timeStep, gammaColumnMat, newMatF);
+            double delta = newMatF.norm(Matrix.Norm.Infinity);
+
+            tau = tol * Math.max(vecY.norm(Vector.Norm.Infinity), 1.0);
 
             // update the solution only if the error is acceptable
             if (delta <= tau) {
                 time = time + timeStep;
-                for (int i = 0; i < gammaColumn.getRowDimension(); i++) {
-                    gammaColumn.set(i, 0, gamma.get(i, 0));
-                }
-                vecY.plusEquals(matF.times(timeStep).times(gammaColumn));
+                gammaColumn = Matrices.getColumn(gamma, 0);
+                gammaColumnMat = new DenseMatrix(gammaColumn);
+
+                newMatF.zero();
+                matF.mult(timeStep, gammaColumnMat, newMatF);
+
+                vecY.add(Matrices.getColumn(newMatF, 0));
+
                 yout = vecY.copy();
             }
 
@@ -136,12 +160,10 @@ public class Pendulum implements Simulator {
             System.out.println("SINGULARITY LIKELY: " + time);
         }
 
-        Matrix nextState = new Matrix(2, 1);
-        nextState.set(0, 0, yout.get(0, 0));
-        nextState.set(1, 0, yout.get(1, 0));
+        Vector nextState = yout.copy();
 
         int reward = 0;
-        if (Math.abs(nextState.get(0, 0)) > Math.PI / 2) {
+        if (Math.abs(nextState.get(0)) > Math.PI / 2) {
             reward = -1;
         }
 
@@ -152,60 +174,60 @@ public class Pendulum implements Simulator {
         return sample;
     }
 
-    private Matrix pendulumSim(Matrix stateMat,
+    private Vector pendulumSim(Vector stateMat,
                                double pendulumMass,
                                double cartMass,
                                double pendulumLength,
                                double gravity) {
-        Matrix xdot = new Matrix(3, 1);
-        double controlInput = stateMat.get(2, 0);
-        double cx = Math.cos(stateMat.get(0, 0));
+        Vector xdot = new DenseVector(3);
+        double controlInput = stateMat.get(2);
+        double cx = Math.cos(stateMat.get(0));
 
-        xdot.set(0, 0, stateMat.get(1, 0));
+        xdot.set(0, stateMat.get(1));
         double accel = 1.0 / (cartMass + pendulumMass);
 
-        xdot.set(1, 0, ((gravity * Math.sin(stateMat.get(0, 0)))
+        xdot.set(1, ((gravity * Math.sin(stateMat.get(0)))
                         - (accel * pendulumMass * pendulumLength
-                           * stateMat.get(1, 0) * stateMat.get(1, 0)
-                           * Math.sin(2.0 * stateMat.get(0, 0)) / 2.0)
-                        - (accel * Math.cos(stateMat.get(0, 0)) * controlInput))
+                           * stateMat.get(1) * stateMat.get(1)
+                           * Math.sin(2.0 * stateMat.get(0)) / 2.0)
+                        - (accel * Math.cos(stateMat.get(0)) * controlInput))
                        / (4.0 / 3.0 * pendulumLength - accel
                                                        * pendulumMass * pendulumLength * cx * cx));
 
-        xdot.set(2, 0, 0);
+        xdot.set(2, 0);
 
         return xdot;
     }
 
 
     @Override
-    public boolean isGoal(Matrix state) {
+    public boolean isGoal(Vector state) {
         return false;
     }
 
     @Override
-    public boolean isNonGoalTerminal(Matrix state) {
+    public boolean isNonGoalTerminal(Vector state) {
         return isTerminal(state);
     }
 
     @Override
-    public boolean isTerminal(Matrix state) {
-        if (Math.abs(state.get(0, 0)) > Math.PI / 2) {
+    public boolean isTerminal(Vector state) {
+        if (Math.abs(state.get(0)) > Math.PI / 2) {
             return true;
         }
         return false;
     }
 
     @Override
-    public void setState(Matrix state) {
-        if (state.getRowDimension() * state.getColumnDimension() != 2) {
+    public void setState(Vector state) {
+        if (state.size() != 2) {
             return;
         }
         currState = state;
     }
 
     @Override
-    public Matrix getState() {
+    public Vector getState() {
         return currState;
     }
 
@@ -221,7 +243,7 @@ public class Pendulum implements Simulator {
     }
 
     @Override
-    public String stateStr(Matrix state) {
+    public String stateStr(Vector state) {
         // TODO Auto-generated method stub
         return null;
     }

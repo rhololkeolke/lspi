@@ -1,14 +1,15 @@
 package edu.cwru.eecs.rl.domains;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
 import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import edu.cwru.eecs.rl.types.Sample;
+import no.uib.cipr.matrix.DenseVector;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ProbabilisticChainTests {
 
@@ -17,7 +18,7 @@ public class ProbabilisticChainTests {
         final int numSamples = 100;
 
         Chain simulator = new Chain(10, .5, 0);
-        simulator.setState(new Matrix(new double[]{5}, 1));
+        simulator.setState(new DenseVector(new double[]{5}));
 
         List<Sample> samples = new LinkedList<Sample>();
         for (int i = 0; i < numSamples; i++) {
@@ -26,7 +27,7 @@ public class ProbabilisticChainTests {
 
         // now see if the same seed reproduces the same samples
         simulator = new Chain(10, .5, 0);
-        simulator.setState(new Matrix(new double[]{5}, 1));
+        simulator.setState(new DenseVector(new double[]{5}));
 
         Sample testSample;
         for (int i = 0; i < numSamples; i++) {
@@ -36,7 +37,7 @@ public class ProbabilisticChainTests {
 
         // now verify that a different seed produces different results
         simulator = new Chain(10, .5, 1);
-        simulator.setState(new Matrix(new double[]{5}, 1));
+        simulator.setState(new DenseVector(new double[]{5}));
 
         boolean samplesDiffer = false;
         for (int i = 0; i < numSamples; i++) {
@@ -59,16 +60,16 @@ public class ProbabilisticChainTests {
 
         boolean didFailStep = false;
         for (int i = 0; i < numTries; i++) {
-            simulator.setState(new Matrix(new double[]{4}, 1));
-            if ((int) simulator.step(0).nextState.get(0, 0) == 5) {
+            simulator.setState(new DenseVector(new double[]{4}));
+            if ((int) simulator.step(0).nextState.get(0) == 5) {
                 didFailStep = true;
                 break;
             }
         }
 
         assertTrue(
-            "With success probability less than 1 would expect there to be at least one failure",
-            didFailStep);
+                "With success probability less than 1 would expect there to be at least one failure",
+                didFailStep);
     }
 
     @Test
@@ -79,16 +80,16 @@ public class ProbabilisticChainTests {
 
         boolean didFailStep = false;
         for (int i = 0; i < numTries; i++) {
-            simulator.setState(new Matrix(new double[]{4}, 1));
-            if ((int) simulator.step(1).nextState.get(0, 0) == 3) {
+            simulator.setState(new DenseVector(new double[]{4}));
+            if ((int) simulator.step(1).nextState.get(0) == 3) {
                 didFailStep = true;
                 break;
             }
         }
 
         assertTrue(
-            "With success probability less than 1 would expect there to be at least one failure",
-            didFailStep);
+                "With success probability less than 1 would expect there to be at least one failure",
+                didFailStep);
     }
 
     @Test
@@ -98,8 +99,8 @@ public class ProbabilisticChainTests {
 
         int numSuccess = 0;
         for (int i = 0; i < numSamples; i++) {
-            simulator.setState(new Matrix(new double[]{4}, 1));
-            if ((int) simulator.step(0).nextState.get(0, 0) == 3) {
+            simulator.setState(new DenseVector(new double[]{4}));
+            if ((int) simulator.step(0).nextState.get(0) == 3) {
                 numSuccess++;
             }
         }
@@ -114,8 +115,8 @@ public class ProbabilisticChainTests {
 
         int numSuccess = 0;
         for (int i = 0; i < numSamples; i++) {
-            simulator.setState(new Matrix(new double[]{4}, 1));
-            if ((int) simulator.step(1).nextState.get(0, 0) == 5) {
+            simulator.setState(new DenseVector(new double[]{4}));
+            if ((int) simulator.step(1).nextState.get(0) == 5) {
                 numSuccess++;
             }
         }

@@ -9,7 +9,6 @@ import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,8 +26,7 @@ public class PolicySamplerTests {
     public void setUp() {
         simulator = new Chain(10, 1, 0);
         BasisFunctions basis = new FakeBasis();
-        randomPolicy = new Policy(1, simulator.numActions(), basis,
-                                  Matrix.random(basis.size(), 1));
+        randomPolicy = new Policy(1, simulator.numActions(), basis);
     }
 
     @Test

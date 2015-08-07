@@ -1,7 +1,8 @@
 package edu.cwru.eecs.rl.domains;
 
 import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
+import no.uib.cipr.matrix.DenseVector;
+import no.uib.cipr.matrix.Vector;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -14,7 +15,7 @@ public class Chain implements Simulator {
     private Random rng;
     private Set<Integer> rewardStates;
 
-    private Matrix currState;
+    private Vector currState;
 
     /**
      * Constructs a new Chain domain instance. The chain length is specified by numStates. The
@@ -52,17 +53,17 @@ public class Chain implements Simulator {
         rewardStates.add(new Integer(numStates - 1));
 
         // in case initialize isn't called
-        currState = new Matrix(new double[]{rng.nextInt(numStates)}, 1);
+        currState = new DenseVector(new double[]{rng.nextInt(numStates)});
     }
 
     @Override
     public void reset() {
-        currState = new Matrix(new double[]{rng.nextInt(numStates)}, 1);
+        currState = new DenseVector(new double[]{rng.nextInt(numStates)});
     }
 
     @Override
     public Sample step(int action) {
-        int icurrState = (int) currState.get(0, 0);
+        int icurrState = (int) currState.get(0);
         int inextState = icurrState;
         double totProb = 0;
         for (int i = icurrState - 1; i <= icurrState + 1; i += 2) {
@@ -75,7 +76,7 @@ public class Chain implements Simulator {
         }
 
         // TODO: should this be nextState or state?
-        Matrix nextState = new Matrix(new double[]{inextState}, 1);
+        Vector nextState = new DenseVector(new double[]{inextState});
         int reward = rewardStates.contains(inextState) ? 1 : 0;
         Sample sample = new Sample(currState, action, nextState, reward);
 
@@ -85,31 +86,31 @@ public class Chain implements Simulator {
     }
 
     @Override
-    public boolean isGoal(Matrix state) {
+    public boolean isGoal(Vector state) {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean isNonGoalTerminal(Matrix state) {
+    public boolean isNonGoalTerminal(Vector state) {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean isTerminal(Matrix state) {
+    public boolean isTerminal(Vector state) {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void setState(Matrix state) {
+    public void setState(Vector state) {
         // TODO Auto-generated method stub
         currState = state;
     }
 
     @Override
-    public Matrix getState() {
+    public Vector getState() {
         return currState;
     }
 
@@ -126,7 +127,7 @@ public class Chain implements Simulator {
     }
 
     @Override
-    public String stateStr(Matrix state) {
+    public String stateStr(Vector state) {
         // TODO Auto-generated method stub
         return null;
     }

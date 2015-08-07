@@ -1,7 +1,7 @@
 package edu.cwru.eecs.rl.domains;
 
 import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
+import no.uib.cipr.matrix.Vector;
 
 public interface Simulator {
 
@@ -9,21 +9,21 @@ public interface Simulator {
 
     Sample step(int action);
 
-    boolean isGoal(Matrix state);
+    boolean isGoal(Vector state);
 
-    boolean isNonGoalTerminal(Matrix state);
+    boolean isNonGoalTerminal(Vector state);
 
-    boolean isTerminal(Matrix state);
+    boolean isTerminal(Vector state);
 
-    void setState(Matrix state);
+    void setState(Vector state);
 
-    Matrix getState();
+    Vector getState();
 
     int numStates();
 
     int numActions();
 
-    String stateStr(Matrix state);
+    String stateStr(Vector state);
 
     String actionStr(double action);
 }

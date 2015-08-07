@@ -1,5 +1,11 @@
 package edu.cwru.eecs.rl;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.List;
+
 import edu.cwru.eecs.rl.agent.PolicySampler;
 import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
 import edu.cwru.eecs.rl.basisfunctions.GaussianRbf;
@@ -9,12 +15,6 @@ import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
 
 /**
  * Created by Devin on 8/4/14.
@@ -33,9 +33,8 @@ public class PendulumLearnTests {
         simulator = new Pendulum();
         BasisFunctions fakeBasis = new FakeBasis();
         randomPolicy = new Policy(1,
-                                  simulator.numActions(),
-                                  fakeBasis,
-                                  Matrix.random(fakeBasis.size(), 1));
+                simulator.numActions(),
+                fakeBasis);
 
         samples = PolicySampler.sample(simulator, 1000, 50, randomPolicy);
     }
@@ -44,9 +43,8 @@ public class PendulumLearnTests {
     public void testPendulumLearnWithRbfBasis() {
         BasisFunctions rbfBasis = new GaussianRbf(3, 3, 3);
         Policy learnedPolicy = new Policy(0,
-                                          simulator.numActions(),
-                                          rbfBasis,
-                                          Matrix.random(rbfBasis.size(), 1));
+                simulator.numActions(),
+                rbfBasis);
 
         learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_MTJ);
 

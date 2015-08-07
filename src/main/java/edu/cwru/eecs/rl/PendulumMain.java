@@ -1,5 +1,7 @@
 package edu.cwru.eecs.rl;
 
+import java.util.List;
+
 import edu.cwru.eecs.rl.agent.PolicySampler;
 import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
 import edu.cwru.eecs.rl.basisfunctions.GaussianRbf;
@@ -9,9 +11,8 @@ import edu.cwru.eecs.rl.domains.Simulator;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
-import Jama.Matrix;
-
-import java.util.List;
+import no.uib.cipr.matrix.Matrices;
+import no.uib.cipr.matrix.Vector;
 
 public class PendulumMain {
 
@@ -29,14 +30,15 @@ public class PendulumMain {
         Simulator simulator = new Pendulum();
         BasisFunctions fakeBasis = new FakeBasis();
         BasisFunctions rbfBasis = new GaussianRbf(3, 3, 3);
+        Vector n = Matrices.random(fakeBasis.size());
         Policy randomPolicy = new Policy(1,
-                                         simulator.numActions(),
-                                         fakeBasis,
-                                         Matrix.random(fakeBasis.size(), 1));
+                simulator.numActions(),
+                fakeBasis,
+                Matrices.random(fakeBasis.size()));
         Policy learnedPolicy = new Policy(0,
-                                          simulator.numActions(),
-                                          rbfBasis,
-                                          Matrix.random(rbfBasis.size(), 1));
+                simulator.numActions(),
+                rbfBasis,
+                Matrices.random(rbfBasis.size()));
 
         System.out.println("Sampling 1000 episodes with 50 steps using random policy");
         List<Sample> samples = PolicySampler.sample(simulator, 1000, 50, randomPolicy);
