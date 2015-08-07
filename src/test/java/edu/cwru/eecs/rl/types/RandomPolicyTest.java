@@ -3,6 +3,8 @@ package edu.cwru.eecs.rl.types;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.cwru.eecs.rl.basisfunctions.FakeBasis;
 import no.uib.cipr.matrix.DenseVector;
@@ -10,6 +12,8 @@ import no.uib.cipr.matrix.Vector;
 
 @SuppressWarnings("deprecation")
 public class RandomPolicyTest {
+
+    public static final Logger logger = LoggerFactory.getLogger(RandomPolicyTest.class);
 
     private Policy randomPolicy;
 
@@ -30,7 +34,7 @@ public class RandomPolicyTest {
         try {
             firstAction = randomPolicy.evaluate(new DenseVector(new double[]{1}));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("{}", e.getMessage(), e);
         }
         // try up to 100 times to get a different action for the same state
         // this is to make sure that random values are being used
@@ -40,7 +44,7 @@ public class RandomPolicyTest {
             try {
                 action = randomPolicy.evaluate(new DenseVector(new double[]{1}));
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("{}", e.getMessage(), e);
             }
             if (action != firstAction) {
                 differentAction = true;
@@ -55,7 +59,7 @@ public class RandomPolicyTest {
         try {
             qValue = randomPolicy.stateActionValue(new DenseVector(new double[]{1}), 0);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("{}", e.getMessage(), e);
         }
         Assert.assertEquals(2, qValue, .0001);
     }

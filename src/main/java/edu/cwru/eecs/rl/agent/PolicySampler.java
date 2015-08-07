@@ -1,13 +1,18 @@
 package edu.cwru.eecs.rl.agent;
 
-import edu.cwru.eecs.rl.domains.Simulator;
-import edu.cwru.eecs.rl.types.Policy;
-import edu.cwru.eecs.rl.types.Sample;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.cwru.eecs.rl.domains.Simulator;
+import edu.cwru.eecs.rl.types.Policy;
+import edu.cwru.eecs.rl.types.Sample;
+
 public class PolicySampler {
+
+    public static final Logger logger = LoggerFactory.getLogger(PolicySampler.class);
 
     /**
      * Given a simulator and a sampling policy this will collect samples from the specified number
@@ -33,7 +38,7 @@ public class PolicySampler {
                 try {
                     sample = simulator.step(policy.evaluate(simulator.getState()));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("{}", e.getMessage(), e);
                 }
                 samples.add(sample);
                 // if this episode has ended early then start the next one
@@ -69,7 +74,7 @@ public class PolicySampler {
                 try {
                     sample = simulator.step(policy.evaluate(simulator.getState()));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("{}", e.getMessage(), e);
                 }
                 totalRewards += sample.reward;
                 if (simulator.isTerminal(sample.nextState)) {

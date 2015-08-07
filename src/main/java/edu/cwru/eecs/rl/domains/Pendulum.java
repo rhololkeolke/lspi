@@ -1,5 +1,8 @@
 package edu.cwru.eecs.rl.domains;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.cwru.eecs.rl.types.Sample;
 import no.uib.cipr.matrix.DenseMatrix;
 import no.uib.cipr.matrix.DenseVector;
@@ -10,6 +13,8 @@ import no.uib.cipr.matrix.Vector;
 import java.util.Random;
 
 public class Pendulum implements Simulator {
+
+    public static final Logger logger = LoggerFactory.getLogger(Pendulum.class);
 
     private double dt;
     private double tol;
@@ -157,7 +162,7 @@ public class Pendulum implements Simulator {
         }
 
         if (time < tfinal) {
-            System.out.println("SINGULARITY LIKELY: " + time);
+            logger.warn("SINGULARITY LIKELY: {}", time);
         }
 
         Vector nextState = yout.copy();

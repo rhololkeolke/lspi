@@ -1,5 +1,8 @@
 package edu.cwru.eecs.rl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 import edu.cwru.eecs.rl.agent.PolicySampler;
@@ -15,6 +18,8 @@ import no.uib.cipr.matrix.Matrices;
 
 public class ChainMain {
 
+    public static final Logger logger = LoggerFactory.getLogger(ChainMain.class);
+
     /**
      * Runs the chain domain with Lspi with a set of parameters that are known to work. These
      * parameters are from the paper and original Matlab implementation of Lspi.
@@ -22,9 +27,7 @@ public class ChainMain {
      * @param args Now arguments are used
      */
     public static void main(String[] args) {
-        System.out.println("Hello Lspi");
-
-        System.out.println("Initializing chain domain with 10 states and 90% success probability");
+        logger.info("Initializing chain domain with 10 states and 90% success probability");
 
         Simulator simulator = new Chain(10, .9, 0);
         BasisFunctions fakeBasis = new FakeBasis();
@@ -38,17 +41,17 @@ public class ChainMain {
                 polyBasis,
                 Matrices.random(polyBasis.size()));
 
-        System.out.println("Sampling 10 episodes with 500 steps using random policy");
+        logger.info("Sampling 10 episodes with 500 steps using random policy");
         List<Sample> samples = PolicySampler.sample(simulator, 10, 500, randomPolicy);
 
-        System.out.println("Running Lspi");
+        logger.info("Running Lspi");
         learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 10, Lspi.PolicyImprover.LSTDQ_MTJ);
 
-        System.out.println("Evaluating random and learned policy");
+        logger.info("Evaluating random and learned policy");
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, randomPolicy);
         double avgLearnedRewards = PolicySampler.evaluatePolicy(simulator, 10, 500, learnedPolicy);
 
-        System.out.println("Random Policy Average Rewards: " + avgRandomRewards);
-        System.out.println("Learned Policy Average Rewards: " + avgLearnedRewards);
+        logger.info("Random Policy Average Rewards: " + avgRandomRewards);
+        logger.info("Learned Policy Average Rewards: " + avgLearnedRewards);
     }
 }

@@ -1,5 +1,8 @@
 package edu.cwru.eecs.rl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 import edu.cwru.eecs.rl.agent.PolicySampler;
@@ -16,6 +19,8 @@ import no.uib.cipr.matrix.Vector;
 
 public class PendulumMain {
 
+    public static final Logger logger = LoggerFactory.getLogger(PendulumMain.class);
+
     /**
      * Main method. Runs the Pendulum domain with known working settings. These settings are taken
      * from the Lspi paper and original Matlab code.
@@ -23,9 +28,7 @@ public class PendulumMain {
      * @param args Not used
      */
     public static void main(String[] args) {
-        System.out.println("Hello Lspi");
-
-        System.out.println("Initializing pendulum domain");
+        logger.info("Initializing pendulum domain");
 
         Simulator simulator = new Pendulum();
         BasisFunctions fakeBasis = new FakeBasis();
@@ -40,18 +43,18 @@ public class PendulumMain {
                 rbfBasis,
                 Matrices.random(rbfBasis.size()));
 
-        System.out.println("Sampling 1000 episodes with 50 steps using random policy");
+        logger.info("Sampling 1000 episodes with 50 steps using random policy");
         List<Sample> samples = PolicySampler.sample(simulator, 1000, 50, randomPolicy);
 
-        System.out.println("Running Lspi");
+        logger.info("Running Lspi");
         learnedPolicy = Lspi.learn(samples, learnedPolicy, .9, 1e-5, 20, Lspi.PolicyImprover.LSTDQ_MTJ);
 
-        System.out.println("Evaluating random and learned policy");
+        logger.info("Evaluating random and learned policy");
         double avgRandomRewards = PolicySampler.evaluatePolicy(simulator, 1000, 50, randomPolicy);
         double avgLearnedRewards = PolicySampler.evaluatePolicy(simulator, 1000, 50, learnedPolicy);
 
-        System.out.println("Random Policy Average Rewards: " + avgRandomRewards);
-        System.out.println("Learned Policy Average Rewards: " + avgLearnedRewards);
+        logger.info("Random Policy Average Rewards: " + avgRandomRewards);
+        logger.info("Learned Policy Average Rewards: " + avgLearnedRewards);
 
     }
 

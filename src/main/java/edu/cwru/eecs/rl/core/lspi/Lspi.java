@@ -1,5 +1,11 @@
 package edu.cwru.eecs.rl.core.lspi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.List;
+
 import edu.cwru.eecs.rl.basisfunctions.ExactBasis;
 import edu.cwru.eecs.rl.types.Policy;
 import edu.cwru.eecs.rl.types.Sample;
@@ -8,12 +14,15 @@ import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrices;
 import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
-import no.uib.cipr.matrix.sparse.*;
-
-import java.io.Serializable;
-import java.util.List;
+import no.uib.cipr.matrix.sparse.DefaultIterationMonitor;
+import no.uib.cipr.matrix.sparse.GMRES;
+import no.uib.cipr.matrix.sparse.IterativeSolver;
+import no.uib.cipr.matrix.sparse.IterativeSolverNotConvergedException;
+import no.uib.cipr.matrix.sparse.LinkedSparseMatrix;
 
 public class Lspi implements Serializable {
+
+    public static final Logger logger = LoggerFactory.getLogger(Lspi.class);
 
     public enum PolicyImprover {LSTDQ_MTJ, LSTDQ_EXACT_MTJ}
 
@@ -40,7 +49,7 @@ public class Lspi implements Serializable {
         int iteration = 0;
         double normInf;
         do {
-            System.out.println("Starting iteration " + iteration);
+            logger.info("Starting iteration {}", iteration);
             oldPolicy = new Policy(newPolicy);
             switch (policyImprover) {
                 case LSTDQ_EXACT_MTJ:
@@ -52,14 +61,15 @@ public class Lspi implements Serializable {
                     newPolicy.weights = lstdqMtj(samples, oldPolicy, gamma);
             }
             iteration++;
+            assert newPolicy.weights != null;
             Vector newWeights = newPolicy.weights.copy();
             normInf = newWeights.add(-1, oldPolicy.weights).norm(Vector.Norm.Infinity);
-            System.out.println("normF: " + normInf);
+            logger.info("normInf: {}", normInf);
         } while (normInf > epsilon && iteration <= maxIterations);
 
         if (iteration >= maxIterations) {
-            System.out.println("Lspi failed to converge within " + maxIterations);
-            System.out.println("Epsilon: " + epsilon + " normF: " + normInf);
+            logger.info("Lspi failed to converge within {}", maxIterations);
+            logger.info("Epsilon: {} normInf: {}", epsilon, normInf);
         }
 
         return newPolicy;
@@ -73,15 +83,14 @@ public class Lspi implements Serializable {
 
         Vector vecB = new DenseVector(basisSize);
 
-        System.out.println("Evaluating the samples");
+        logger.info("Evaluating the samples");
         for (Sample sample : samples) {
             // Find the value of pi(s')
             int bestAction = 0;
             try {
                 bestAction = policy.evaluate(sample.nextState);
             } catch (Exception e) {
-                System.err.println("Failed to evaluate the policy");
-                e.printStackTrace();
+                logger.error("Failed to evaluate the policy. Reason: {}", e.getMessage(), e);
             }
 
             // phi(s,a)
@@ -100,15 +109,14 @@ public class Lspi implements Serializable {
             vecB.add(sample.reward, phi1);
         }
 
-        System.out.println("Solving matrix equations");
+        logger.info("Solving matrix equations");
         IterativeSolver solver = new GMRES(vecB);
 
         Vector vecX = new DenseVector(basisSize);
         try {
             vecX = solver.solve(matA, vecB, vecX);
         } catch (IterativeSolverNotConvergedException e) {
-            System.err.println("IterativeSolverNotConvergedException: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("IterativeSolverNotConvergedException: {}", e.getMessage(), e);
             return null;
         }
 
@@ -118,11 +126,11 @@ public class Lspi implements Serializable {
     public static Vector lstdqExactMtj(List<Sample> samples,
                                        Policy policy,
                                        double gamma) {
-        ExactBasis basis = null;
+        ExactBasis basis;
         if (policy.basis instanceof ExactBasis) {
             basis = (ExactBasis) policy.basis;
         } else {
-            System.err.println("LSTDQExact requires a policy with a "
+            logger.error("LSTDQExact requires a policy with a "
                     + "basis function of class ExactBasis.class. "
                     + "Running normal LSTDQ instead.");
             return lstdqMtj(samples, policy, gamma);
@@ -130,20 +138,19 @@ public class Lspi implements Serializable {
 
         int basisSize = policy.basis.size();
         Matrix matA = new LinkedSparseMatrix(basisSize, basisSize);
-        System.out.println("Preconditioning matrix");
-        for (int i=0; i<basisSize; i++) {
+        logger.info("Preconditioning matrix");
+        for (int i = 0; i < basisSize; i++) {
             matA.set(i, i, .01);
         }
         Vector vecB = new DenseVector(basisSize);
 
-        System.out.println("Evaluating samples");
+        logger.info("Evaluating samples");
         for (Sample sample : samples) {
             int bestAction = 0;
             try {
                 bestAction = policy.sparseEvaluate(sample.nextState);
             } catch (Exception e) {
-                System.err.println("Failed to evaluate the policy");
-                e.printStackTrace();
+                logger.error("Failed to evaluate the policy. Reason: {}", e.getMessage(), e);
             }
 
             int currStateIndex = basis.getStateActionIndex(sample.currState, sample.action);
@@ -159,7 +166,7 @@ public class Lspi implements Serializable {
             vecB.set(currStateIndex, vecB.get(currStateIndex) + sample.reward);
         }
 
-        System.out.println("Solving matrix equations");
+        logger.info("Solving matrix equations");
         IterativeSolver solver = new GMRES(vecB);
         int maxGmresIterations = 1000000;
         solver.setIterationMonitor(new DefaultIterationMonitor(maxGmresIterations, 1e-5, 1e-50, 1e+5));
@@ -171,13 +178,15 @@ public class Lspi implements Serializable {
                 vecX = solver.solve(matA, vecB, vecX);
                 break;
             } catch (IterativeSolverNotConvergedException e) {
-                System.err.println("IterativeSolverNotConvergedException: " + e.getMessage());
-                System.err.println("Ran for " + solver.getIterationMonitor().iterations() + " iterations");
-                e.printStackTrace();
+                logger.error("IterativeSolverNotConvergedException: {}", e.getMessage(), e);
+                logger.error("Ran for {} iterations", solver.getIterationMonitor().iterations());
             }
             maxGmresIterations *= 10;
-            solver.setIterationMonitor(new DefaultIterationMonitor(maxGmresIterations, 1e-5, 1e-50, 1e+5));
-            System.out.println("Trying again with " + maxGmresIterations + " iterations");
+            solver.setIterationMonitor(new DefaultIterationMonitor(maxGmresIterations,
+                    1e-5,
+                    1e-50,
+                    1e+5));
+            logger.info("Trying again with {} iterations", maxGmresIterations);
         }
         return vecX;
     }
