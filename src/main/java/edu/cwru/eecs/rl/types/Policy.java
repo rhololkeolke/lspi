@@ -1,9 +1,7 @@
 package edu.cwru.eecs.rl.types;
 
-import edu.cwru.eecs.linalg.SparseMatrix;
 import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrices;
-import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
 
 import java.io.Serializable;
@@ -87,23 +85,6 @@ public class Policy implements Serializable {
         return bestAction;
     }
 
-    public int sparseEvaluate(Vector state) throws Exception {
-        int bestAction = 0;
-        if (Math.random() < this.explore) {
-            bestAction = (int) (Math.random() * actions);
-        } else {
-            double bestQ = Double.NEGATIVE_INFINITY;
-            for (int action = 0; action < actions; action++) {
-                double currQ = this.stateActionValueSparse(state, action);
-                if (currQ > bestQ) {
-                    bestQ = currQ;
-                    bestAction = action;
-                }
-            }
-        }
-        return bestAction;
-    }
-
     /**
      * Returns the state-action value for the given state action pair.
      *
@@ -114,16 +95,6 @@ public class Policy implements Serializable {
      */
     public double stateActionValue(Vector state, int action) throws Exception {
         Vector phi = getPhi(state, action);
-
-        return phi.dot(this.weights);
-    }
-
-    public double stateActionValueSparse(Vector state, int action) throws Exception {
-        SparseMatrix phi = basis.sparseEvaluate(state, action);
-
-        if (phi.numRows != this.weights.size()) {
-            throw new Exception("Phi matrix dimension does not match policy weight dimensions");
-        }
 
         return phi.dot(this.weights);
     }

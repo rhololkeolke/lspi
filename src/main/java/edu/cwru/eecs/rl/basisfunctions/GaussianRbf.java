@@ -1,6 +1,5 @@
 package edu.cwru.eecs.rl.basisfunctions;
 
-import edu.cwru.eecs.linalg.SparseMatrix;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Vector;
@@ -53,11 +52,6 @@ public class GaussianRbf implements BasisFunctions, Serializable {
         }
 
         return phi;
-    }
-
-    @Override
-    public SparseMatrix sparseEvaluate(Vector state, int action) {
-        return new SparseMatrix(evaluate(state, action));
     }
 
     @Override

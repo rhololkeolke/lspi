@@ -1,6 +1,5 @@
 package edu.cwru.eecs.rl.basisfunctions;
 
-import edu.cwru.eecs.linalg.SparseMatrix;
 import edu.cwru.eecs.rl.types.BasisFunctions;
 import no.uib.cipr.matrix.Vector;
 import no.uib.cipr.matrix.sparse.SparseVector;
@@ -60,16 +59,6 @@ public class ExactBasis implements BasisFunctions, Serializable {
         int index = getStateActionIndex(state, action);
 
         result.set(index, 1);
-        return result;
-    }
-
-    @Override
-    public SparseMatrix sparseEvaluate(Vector state, int action) {
-        SparseMatrix result = new SparseMatrix(this.size(), 1);
-
-        int index = getStateActionIndex(state, action);
-
-        result.set(index, 0, 1);
         return result;
     }
 

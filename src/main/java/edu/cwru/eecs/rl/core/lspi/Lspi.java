@@ -1,5 +1,6 @@
 package edu.cwru.eecs.rl.core.lspi;
 
+import no.uib.cipr.matrix.sparse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,11 +15,6 @@ import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrices;
 import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
-import no.uib.cipr.matrix.sparse.DefaultIterationMonitor;
-import no.uib.cipr.matrix.sparse.GMRES;
-import no.uib.cipr.matrix.sparse.IterativeSolver;
-import no.uib.cipr.matrix.sparse.IterativeSolverNotConvergedException;
-import no.uib.cipr.matrix.sparse.LinkedSparseMatrix;
 
 public class Lspi implements Serializable {
 
@@ -98,7 +94,10 @@ public class Lspi implements Serializable {
             // phi(s,a)
             Vector phi2 = phi1.copy();
             // phi(s', pi(s'))
-            Vector phi3 = policy.getPhi(sample.nextState, bestAction);
+            Vector phi3 = new SparseVector(phi2.size());
+            if(!sample.absorb) {
+                phi3 = policy.getPhi(sample.nextState, bestAction);
+            }
 
             // update matA
             Matrix y = new DenseMatrix(phi2.add(phi3.scale(-gamma)));
@@ -148,7 +147,7 @@ public class Lspi implements Serializable {
         for (Sample sample : samples) {
             int bestAction = 0;
             try {
-                bestAction = policy.sparseEvaluate(sample.nextState);
+                bestAction = policy.evaluate(sample.nextState);
             } catch (Exception e) {
                 logger.error("Failed to evaluate the policy. Reason: {}", e.getMessage(), e);
             }
@@ -156,11 +155,15 @@ public class Lspi implements Serializable {
             int currStateIndex = basis.getStateActionIndex(sample.currState, sample.action);
             int nextStateIndex = basis.getStateActionIndex(sample.nextState, bestAction);
 
-            if (currStateIndex == nextStateIndex) {
-                matA.set(currStateIndex, currStateIndex, matA.get(currStateIndex, currStateIndex) + 1 - gamma);
-            } else {
+            if(sample.absorb) {
                 matA.set(currStateIndex, currStateIndex, matA.get(currStateIndex, currStateIndex) + 1);
-                matA.set(currStateIndex, nextStateIndex, matA.get(currStateIndex, nextStateIndex) - gamma);
+            } else {
+                if (currStateIndex == nextStateIndex) {
+                    matA.set(currStateIndex, currStateIndex, matA.get(currStateIndex, currStateIndex) + 1 - gamma);
+                } else {
+                    matA.set(currStateIndex, currStateIndex, matA.get(currStateIndex, currStateIndex) + 1);
+                    matA.set(currStateIndex, nextStateIndex, matA.get(currStateIndex, nextStateIndex) - gamma);
+                }
             }
 
             vecB.set(currStateIndex, vecB.get(currStateIndex) + sample.reward);
